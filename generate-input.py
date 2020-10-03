@@ -13,21 +13,28 @@ def input_style(extension_type):
     return inner_decorator
 
 
-@input_style("hilo")
-def hilo(n, k):
+@input_style("random")
+def random(n, k):
     pass
 
 
 @input_style("uniform")
 def uniform(n, k):
-    pass
+    output = []
+    for i in range(n):
+        output.append([i, i, i])
+    return output
 
 
 @input_style("clusters")
 def clusters(n, k):
+    cluster_delta = 100
+    cur_cluster_delta = -1 * cluster_delta
     output = []
     for i in range(n):
-        output.append([i, i, i])
+        if i % (n // k) == 0:
+            cur_cluster_delta += cluster_delta
+        output.append([cur_cluster_delta + i, cur_cluster_delta + i, cur_cluster_delta + i])
     return output
 
 
