@@ -6,9 +6,9 @@ import getopt
 available_inputs = {}
 
 
-def input_style(extension_type):
+def input_style(style_type):
     def inner_decorator(func):
-        available_inputs[extension_type] = func
+        available_inputs[style_type] = func
         return func
     return inner_decorator
 
