@@ -92,7 +92,7 @@ def usage():
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, "hpi:o:s:", ["help", "ifile=", "ofile=", "style="])
+        opts, args = getopt.getopt(argv, "hpi:o:s:", ["help", "print", "ifile=", "ofile=", "style="])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
