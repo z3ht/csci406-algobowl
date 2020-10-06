@@ -100,7 +100,7 @@ def main(argv):
             for cord in point:
                 raw += str(cord) + " "
             raw = raw[:-1] + "\n"
-        file.write(raw)
+        file.write(raw[:-1])
 
 
 if __name__ == "__main__":
