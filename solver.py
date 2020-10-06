@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
 import numpy as np
-from sklearn.cluster import KMeans
+from ClusteringAlgorithms import KMeans
+from sklearn.cluster import KMeans as KMeansLib
 import sys
 import getopt
 from collections import defaultdict
@@ -19,7 +20,11 @@ def solution(solution_name):
 
 @solution("kmeans")
 def kmeans(k, points):
-    return KMeans(n_clusters=k, n_init=20).fit_predict(np.asarray(points))
+    return KMeans(k).cluster(points)
+
+@solution("kmeanslib")
+def kmeans(k, points):
+    return KMeansLib(n_clusters=k, n_init=20).fit_predict(np.asarray(points))
 
 
 def read_input(file_name):
@@ -29,7 +34,7 @@ def read_input(file_name):
 
     points = []
     for line in f:
-        points.append([int(v) for v in line.split()])
+        points.append(tuple([int(v) for v in line.split()]))
 
     f.close()
 
