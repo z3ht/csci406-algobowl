@@ -62,7 +62,7 @@ def get_max_distance_clusters(cluster_dict):
     return max_cluster_distance
 
 
-def calculate_output(max_cluster_distance, clusters):
+def format_output(max_cluster_distance, clusters):
     clusters_point_dict = defaultdict(list)
     output = [str(max_cluster_distance) + "\n"]
     for i in range(len(clusters)):
@@ -134,7 +134,7 @@ def main(argv):
     # compute the maximum distance within the clusters
     worst_cluster_distance = get_max_distance_clusters(cluster_dict)
 
-    output = calculate_output(worst_cluster_distance, clusters)
+    output = format_output(worst_cluster_distance, clusters)
 
     if should_print:
         print(output)
