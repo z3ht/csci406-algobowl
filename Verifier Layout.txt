@@ -1,0 +1,23 @@
+Verifier Code: 
+
+
+Inputs: 
+Input file
+Output file 
+
+Outputs: 
+Boolean Okay/Not Okay 
+
+ 
+
+while file.open(input/output files) 
+
+Check if the output file contains k non-empty sets.
+
+Check if all points are there - len() operation
+
+Check if the Max distance is acceptable: 
+	-Check the distance between each point, in each set.
+	-Verify that the set of the max distance is the reported distance from the file.
+
+ 
