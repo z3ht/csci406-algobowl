@@ -13,9 +13,12 @@ def input_style(style_type):
     return inner_decorator
 
 
-@input_style("random")
-def random(n, k):
-    pass
+@input_style("unequal")
+def unequal(n, k):
+    output = [[0, 0, 0]]
+    cluster_delta = 3
+    output.extend([[point[0] + cluster_delta, point[1] + cluster_delta, point[2] + cluster_delta] for point in clusters(n - 1, k-1)])
+    return output
 
 
 @input_style("uniform")
