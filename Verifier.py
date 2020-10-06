@@ -47,11 +47,18 @@ def allTests(iDictionaryOfPoints, oListSets, numPoints, numSets, maxDistance):
                 print("There is a non-empty set")
                 testPass = False
             numSortedPoints += len(sets)
-            
         
         #compare the input n with number of points
-        
-        
+        if numSets != numSortedPoints:
+            print("There are an incorrect number of points sorted")
+            testPass = False
+            
+        #verify max distance is correct
+        for sets in oListSets:
+            key = 0
+            for point in sets:
+                
+    
         
         
         
