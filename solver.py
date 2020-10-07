@@ -1,9 +1,12 @@
 #!/usr/bin/python
 
 import numpy as np
-from sklearn.cluster import KMeans
+from clusteringalgorithms import KMeans
+from sklearn.cluster import KMeans as KMeansLib
 import sys
 import getopt
+from inspect import signature
+from varname import nameof
 from collections import defaultdict
 
 available_solutions = {}
@@ -18,8 +21,13 @@ def solution(solution_name):
 
 
 @solution("kmeans")
+def kmeans(k, points, verbose):
+    return KMeans(k).cluster(points, verbose=verbose)
+
+
+@solution("kmeanslib")
 def kmeans(k, points):
-    return KMeans(n_clusters=k, n_init=20).fit_predict(np.asarray(points))
+    return KMeansLib(n_clusters=k, n_init=20).fit_predict(np.asarray(points))
 
 
 def read_input(file_name):
@@ -29,7 +37,7 @@ def read_input(file_name):
 
     points = []
     for line in f:
-        points.append([int(v) for v in line.split()])
+        points.append(tuple([int(v) for v in line.split()]))
 
     f.close()
 
@@ -87,12 +95,12 @@ def usage():
     solutions = ""
     for i in available_solutions:
         solutions += i + "|"
-    print(f"usage: solver.py [-h|--help] [-p|--print] --ifile ifile --ofile ofile --style [{solutions[:-1]}]")
+    print(f"usage: solver.py [-h|--help] [-v|--verbose] --ifile ifile --ofile ofile --style [{solutions[:-1]}]")
 
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, "hpi:o:s:", ["help", "print", "ifile=", "ofile=", "style="])
+        opts, cml_args = getopt.getopt(argv, "hvi:o:s:", ["help", "verbose", "ifile=", "ofile=", "style="])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -100,7 +108,7 @@ def main(argv):
     ifile = ""
     ofile = ""
     style = ""
-    should_print = False
+    verbose = False
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
@@ -110,8 +118,8 @@ def main(argv):
             ifile = str(arg)
         elif opt in ("-o", "--ofile"):
             ofile = str(arg)
-        elif opt in ("-p", "--print"):
-            should_print = True
+        elif opt in ("-v", "--verbose"):
+            verbose = True
         elif opt in ("-s", "--style"):
             style = str(arg)
         else:
@@ -124,7 +132,27 @@ def main(argv):
         sys.exit(1)
 
     n, k, points = read_input(ifile)
-    clusters = available_solutions[style](k, points)
+
+    # DO NOT CALL ARGS DIRECTLY; FOR REFLECTION ONLY
+    # Add values if you'd like functions to be able to call them
+    args = {
+        nameof(ifile): ifile,
+        nameof(ofile): ofile,
+        nameof(style): style,
+        nameof(verbose): verbose,
+        nameof(n): n,
+        nameof(k): k,
+        nameof(points): points
+    }
+
+    cur_solution = available_solutions[style]
+    cur_solution_sig = signature(cur_solution)
+    cur_args = []
+    for param in cur_solution_sig.parameters.keys():
+        if param not in args:
+            continue
+        cur_args.append(args[param])
+    clusters = cur_solution(*cur_args)
 
     # convert output into dictionary of clusters (key = cluster_id, value = points in cluster)
     cluster_dict = dict()
@@ -136,7 +164,7 @@ def main(argv):
 
     output = format_output(worst_cluster_distance, clusters)
 
-    if should_print:
+    if verbose:
         print(output)
 
     save_output(ofile, output)
