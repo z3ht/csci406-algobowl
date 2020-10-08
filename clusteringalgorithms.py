@@ -1,5 +1,8 @@
 import random
 import numpy as np
+from collections import defaultdict
+from sys import maxsize
+
 
 class KMeans:
 
@@ -9,16 +12,12 @@ class KMeans:
     points = []
     centroids = dict()
     k = 1
-    max_iterations = 1000
+    max_iterations = 100
 
     def cluster(self, points, verbose=False):
         self.points = points
 
-        # Place the centroids c_1, c_2, ..... c_k randomly
-        for i in range(self.k):
-            while len(self.centroids) != self.k:
-                random_point = points[random.randint(0, len(points) - 1)]
-                self.centroids[random_point] = set(random_point)
+        self.initial_points(points)
 
         if verbose:
             print(f"Here are the initial centroids: {self.centroids.keys()}")
@@ -66,11 +65,29 @@ class KMeans:
 
         return result_list
 
+    def initial_points(self, points):
+        self.centroids[tuple([-1871237723123, -1871237723123, -1871237723123])] = set(
+            tuple([-1871237723123, -1871237723123, -1871237723123])
+        )
+        while len(self.centroids) <= self.k + 1:
+            max_dist = -1
+            next_furthest = None
+            for point in points:
+                centroid = self.find_closest_centroid(point)
+                dist = self.get_distance(point, centroid)
+                if dist > max_dist:
+                    max_dist = dist
+                    next_furthest = point
+            self.centroids[next_furthest] = set(next_furthest)
+        self.centroids.pop(tuple([-1871237723123, -1871237723123, -1871237723123]))
+
     # the the Manhattan distance between two points
     def get_distance(self, p1, p2):
         return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1]) + abs(p1[2] - p2[2])
 
     def get_mean_point(self, cluster):
+        if len(cluster) == 0:
+            return -1
         x_count = 0
         y_count = 0
         z_count = 0

@@ -73,11 +73,23 @@ def super_megadeath(n, k):
         [135, 135, 180, 50],
         [135, 200, 180, 30],
         [135, 230, 180, 10],
-        [1000000, 10000000, 1000000, 3]
+        [1000000, 1000000, 1000000, 3]
     ]
     output = set()
     for planet in planets:
         output.update(sphere(*planet))
+    return list(output)
+
+
+@input_style("armyof5")
+def armyof3(n, k):
+    output = set()
+    output.update(sphere(0, 0, 0, 25))
+    output.add((1000, 1000, 1000))
+    output.add((1000, -1000, -1000))
+    output.add((-1000, -1000, -1000))
+    output.add((1000, 1000, -1000))
+    output.update(sphere(1000, -1000, 1000, 3))
     return list(output)
 
 
@@ -89,7 +101,6 @@ def sphere(x1=0, y1=0, z1=0, r=0):
             y = int(sin(theta) * sin(phi) * r + y1)
             z = int(cos(phi) * r + z1)
             output.append(tuple([x, y, z]))
-
     return output
 
 
