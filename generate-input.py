@@ -49,6 +49,16 @@ def onlyx_uniform(n, k):
         output.append([i, 0, 0])
     return output
 
+@input_style("randomizerFunction") 
+def randomizerFunction(n, k): 
+    output = []
+    for i in range(n):
+        i = random.randrange(-1000, 1000, 1) 
+        j = random.randrange(-1000, 1000, 1)
+        k = random.randrange(-1000, 1000, 1)
+        output.append([i, j, k])
+    return output
+
 
 def randomize(output):
     random.shuffle(output)
@@ -65,6 +75,7 @@ def usage():
 
 
 def main(argv):
+    random.seed() 
     try:
         opts, args = getopt.getopt(argv, "n:k:s:rho:", ["randomize", "lines=", "clusters=", "style=", "help", "ofile="])
     except getopt.GetoptError:

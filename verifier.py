@@ -61,7 +61,7 @@ def allTests(iDictionaryOfPoints, oListSets, numPoints, numSets, maxDistance):
         #ensure that the sets are not empty
         for sets in oListSets:
             if len(sets) == 0:
-                print("There is a non-empty set")
+                print("There is a empty set")
                 testsPass = False
             numSortedPoints += len(sets)
         
@@ -100,11 +100,12 @@ def ourAlgorithm():
 
 
 def main(): 
-    testInput = "exampleinput.txt"
-    testOutput = "exampleoutput.txt"
+    testInput = "TRUERandinput.txt"
+    testOutput = "TRUERandoutput.txt"
     
     fileSpecs = readFiles(testInput, testOutput)
     verifier = allTests(fileSpecs[0], fileSpecs[1], fileSpecs[2], fileSpecs[3], fileSpecs[4])
+    print("The time it took to run this program is: ")
     print(format((time.time() - start_time), '.014f'))
     print(verifier)
 
