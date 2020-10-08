@@ -2,6 +2,7 @@
 
 import sys
 import getopt
+import random
 
 available_inputs = {}
 
@@ -48,6 +49,11 @@ def onlyx_uniform(n, k):
         output.append([i, 0, 0])
     return output
 
+
+def randomize(list_of_points):
+    for i in range(7):
+        random.shuffle(list_of_points)
+    return list_of_points
 
 def usage():
     inputs = ""
