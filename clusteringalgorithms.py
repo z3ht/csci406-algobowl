@@ -69,7 +69,7 @@ class KMeans:
         self.centroids[tuple([-1871237723123, -1871237723123, -1871237723123])] = set(
             tuple([-1871237723123, -1871237723123, -1871237723123])
         )
-        while len(self.centroids) <= self.k + 1:
+        while len(self.centroids) <= self.k:
             max_dist = -1
             next_furthest = None
             for point in points:
