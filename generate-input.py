@@ -3,6 +3,8 @@
 import sys
 import getopt
 import random
+from math import pi, cos, sin
+from numpy import arange
 
 available_inputs = {}
 
@@ -57,6 +59,37 @@ def randomizerFunction(n, k):
         j = random.randrange(-1000, 1000, 1)
         k = random.randrange(-1000, 1000, 1)
         output.append([i, j, k])
+    return output
+
+
+@input_style("smd")
+def super_megadeath(n, k):
+    planets = [
+        [0, 0, 0, 100],
+        [85, 85, 0, 70],
+        [120, 120, 0, 40],
+        [135, 135, 0, 10],
+        [135, 135, 100, 20],
+        [135, 135, 180, 50],
+        [135, 200, 180, 30],
+        [135, 230, 180, 10],
+        [1000000, 10000000, 1000000, 3]
+    ]
+    output = set()
+    for planet in planets:
+        output.update(sphere(*planet))
+    return list(output)
+
+
+def sphere(x1=0, y1=0, z1=0, r=0):
+    output = []
+    for theta in arange(0, 2*pi, 0.3):
+        for phi in arange(0, pi, 0.3):
+            x = int(cos(theta) * sin(phi) * r + x1)
+            y = int(sin(theta) * sin(phi) * r + y1)
+            z = int(cos(phi) * r + z1)
+            output.append(tuple([x, y, z]))
+
     return output
 
 
@@ -115,7 +148,7 @@ def main(argv):
 
     with open(ofile, "w+") as file:
         raw = ""
-        file.write(str(n) + "\n")
+        file.write(str(len(output)) + "\n")
         file.write(str(k) + "\n")
         for point in output:
             for cord in point:
