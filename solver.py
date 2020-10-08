@@ -114,19 +114,18 @@ def main(argv):
         if opt in ("-h", "--help"):
             usage()
             sys.exit(0)
+        elif opt in ("-v", "--verbose"):
+            verbose = True
         elif opt in ("-i", "--ifile"):
             ifile = str(arg)
         elif opt in ("-o", "--ofile"):
             ofile = str(arg)
-        elif opt in ("-v", "--verbose"):
-            verbose = True
         elif opt in ("-s", "--style"):
-            style = str(arg)
-        elif opt in ("-v", "--verbose"):
             style = str(arg)
         else:
             continue
-        argv.remove(arg)
+        if arg in argv:
+            argv.remove(arg)
         argv.remove(opt)
 
     if len(argv) != 0:
