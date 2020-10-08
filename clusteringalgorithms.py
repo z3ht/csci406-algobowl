@@ -1,7 +1,4 @@
-import random
 import numpy as np
-from collections import defaultdict
-from sys import maxsize
 
 
 class KMeans:
@@ -66,9 +63,11 @@ class KMeans:
         return result_list
 
     def initial_points(self, points):
+        # The odds of this being an actual centroid are monumentally low. It is very important it is not
         self.centroids[tuple([-1871237723123, -1871237723123, -1871237723123])] = set(
             tuple([-1871237723123, -1871237723123, -1871237723123])
         )
+
         while len(self.centroids) <= self.k:
             max_dist = -1
             next_furthest = None
@@ -79,6 +78,7 @@ class KMeans:
                     max_dist = dist
                     next_furthest = point
             self.centroids[next_furthest] = set(next_furthest)
+
         self.centroids.pop(tuple([-1871237723123, -1871237723123, -1871237723123]))
 
     # the the Manhattan distance between two points
