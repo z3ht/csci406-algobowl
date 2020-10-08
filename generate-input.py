@@ -50,16 +50,15 @@ def onlyx_uniform(n, k):
     return output
 
 
-def randomize(list_of_points):
-    for i in range(7):
-        random.shuffle(list_of_points)
-    return list_of_points
+def randomize(output):
+    random.shuffle(output)
+
 
 def usage():
     inputs = ""
     for i in available_inputs:
         inputs += i + "|"
-    print(f"usage: generate-input.py --ofile ofile --lines num_lines --clusters num_clusters --style [{inputs[:-1]}]")
+    print(f"usage: generate-input.py [-r|--randomize] --ofile ofile --lines num_lines --clusters num_clusters --style [{inputs[:-1]}]")
     print("2 <= num_clusters <= 20")
     print("3 <= num_lines <= 1000")
     print("num_clusters < num_lines")
@@ -67,7 +66,7 @@ def usage():
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, "n:k:s:ho:", ["lines=", "clusters=", "style=", "help", "ofile="])
+        opts, args = getopt.getopt(argv, "n:k:s:rho:", ["randomize", "lines=", "clusters=", "style=", "help", "ofile="])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -76,6 +75,7 @@ def main(argv):
     k = -1
     ofile = ""
     style = ""
+    is_randomized = False
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
@@ -89,6 +89,8 @@ def main(argv):
             style = str(arg)
         elif opt in ("-o", "--ofile"):
             ofile = str(arg)
+        elif opt in ("-r", "--randomize"):
+            is_randomized = True
         else:
             continue
 
@@ -97,6 +99,8 @@ def main(argv):
         sys.exit(1)
 
     output = available_inputs[style](n, k)
+    if is_randomized:
+        randomize()
 
     with open(ofile, "w+") as file:
         raw = ""
