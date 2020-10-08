@@ -65,6 +65,8 @@ def randomizerFunction(n, k):
 @input_style("smd")
 def super_megadeath(n, k):
     planets = [
+        [0, 0, 0, 5],
+        [0, 0, 0, 15],
         [0, 0, 0, 35],
         [0, 200, 0, 10],
         [-10, 200, 0, 3],
@@ -78,7 +80,7 @@ def super_megadeath(n, k):
         [135, 135, 180, 50],
         [135, 200, 180, 30],
         [135, 230, 180, 10],
-        [995, 995, 995, 3]
+        [900, 900, 900, 6]
     ]
     output = set()
     output.add((-1000, 1000, 1000))
