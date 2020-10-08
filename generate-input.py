@@ -100,7 +100,7 @@ def main(argv):
 
     output = available_inputs[style](n, k)
     if is_randomized:
-        randomize()
+        randomize(output)
 
     with open(ofile, "w+") as file:
         raw = ""
