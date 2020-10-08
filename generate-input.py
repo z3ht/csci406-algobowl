@@ -65,7 +65,12 @@ def randomizerFunction(n, k):
 @input_style("smd")
 def super_megadeath(n, k):
     planets = [
-        [0, 0, 0, 100],
+        [0, 0, 0, 35],
+        [0, 200, 0, 10],
+        [-10, 200, 0, 3],
+        [10, 200, 200, 3],
+        [0, -300, 0, 10],
+        [0, -600, 0, 4],
         [85, 85, 0, 70],
         [120, 120, 0, 40],
         [135, 135, 0, 10],
@@ -73,30 +78,38 @@ def super_megadeath(n, k):
         [135, 135, 180, 50],
         [135, 200, 180, 30],
         [135, 230, 180, 10],
-        [1000000, 1000000, 1000000, 3]
+        [995, 995, 995, 3]
     ]
     output = set()
+    output.add((-1000, 1000, 1000))
+    output.add((1000, -1000, -1000))
+    output.add((-1000, -1000, -1000))
+    output.add((1000, 1000, -1000))
     for planet in planets:
         output.update(sphere(*planet))
     return list(output)
 
 
 @input_style("armyof5")
-def armyof3(n, k):
+def armyof5(n, k):
     output = set()
     output.update(sphere(0, 0, 0, 25))
-    output.add((1000, 1000, 1000))
-    output.add((1000, -1000, -1000))
-    output.add((-1000, -1000, -1000))
-    output.add((1000, 1000, -1000))
-    output.update(sphere(1000, -1000, 1000, 3))
+
+    output.update(sphere(1000, -1000, 1000, 2))
     return list(output)
 
 
-def sphere(x1=0, y1=0, z1=0, r=0):
+@input_style("sphere")
+def sphere(n, k):
+    output = set()
+    output.update(sphere(0, 0, 0, 100))
+    return list(output)
+
+
+def sphere(x1=0, y1=0, z1=0, r=0, density=0.6):
     output = []
-    for theta in arange(0, 2*pi, 0.3):
-        for phi in arange(0, pi, 0.3):
+    for theta in arange(0, 2*pi, density):
+        for phi in arange(0, pi, density):
             x = int(cos(theta) * sin(phi) * r + x1)
             y = int(sin(theta) * sin(phi) * r + y1)
             z = int(cos(phi) * r + z1)

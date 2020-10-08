@@ -9,7 +9,7 @@ class KMeans:
     points = []
     centroids = dict()
     k = 1
-    max_iterations = 100
+    max_iterations = 1000
 
     def cluster(self, points, verbose=False):
         self.points = points
