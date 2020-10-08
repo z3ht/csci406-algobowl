@@ -122,6 +122,8 @@ def main(argv):
             verbose = True
         elif opt in ("-s", "--style"):
             style = str(arg)
+        elif opt in ("-v", "--verbose"):
+            style = str(arg)
         else:
             continue
         argv.remove(arg)
