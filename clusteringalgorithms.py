@@ -41,7 +41,7 @@ class KMeans:
 
             for c in list(self.centroids.keys()):
                 cluster = self.centroids.get(c)
-                cluster_mean = self.get_mean_point(cluster)
+                cluster_mean = self.get_center_point(cluster)
                 self.centroids[cluster_mean] = self.centroids.pop(c)
             i += 1
 
@@ -96,6 +96,12 @@ class KMeans:
             y_count += point[1]
             z_count += point[2]
         return (x_count / len(cluster), y_count / len(cluster), z_count / len(cluster))
+
+    def get_center_point(self, cluster):
+        min_point = min(cluster)
+        max_point = max(cluster)
+        return ((min_point[0] + max_point[0]) / 2), ((min_point[1] + max_point[1]) / 2), (
+                    (min_point[2] + max_point[2]) / 2)
 
     # find the closest centroid to a given point
     def find_closest_centroid(self, point):
