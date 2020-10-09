@@ -11,13 +11,14 @@ class KMeans:
     k = 1
     max_iterations = 1000
 
-    def cluster(self, points, verbose=False):
+    def cluster(self, points, verbose=False, midpoint=False):
         self.points = points
 
         self.initial_points(points)
 
         if verbose:
             print(f"Here are the initial centroids: {self.centroids.keys()}")
+            print(f"Now clustering with midpoint={midpoint}")
 
         # Repeat steps 4 and 5 until convergence or until the end of a fixed number of iterations
         i = 0
@@ -41,7 +42,10 @@ class KMeans:
 
             for c in list(self.centroids.keys()):
                 cluster = self.centroids.get(c)
-                cluster_mean = self.get_center_point(cluster)
+                if midpoint:
+                    cluster_mean = self.get_center_point(cluster)
+                else:
+                    cluster_mean = self.get_mean_point(cluster)
                 self.centroids[cluster_mean] = self.centroids.pop(c)
             i += 1
 

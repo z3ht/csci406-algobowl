@@ -21,14 +21,50 @@ def solution(solution_name):
 
 
 @solution("kmeans")
-def kmeans(k, points, verbose):
-    return KMeans(k).cluster(points, verbose=verbose)
+def kmeans(k, points, verbose, midpoint):
+    return KMeans(k).cluster(points, verbose=verbose, midpoint=midpoint)
 
 
 @solution("kmeanslib")
 def kmeans(k, points):
     return KMeansLib(n_clusters=k, n_init=20).fit_predict(np.asarray(points))
 
+
+def optimize(cluster_dict):
+    previous_distance = 0
+    while True:
+        worst_cluster, worst_cluster_distance, p1, p2 = get_max_distance_cluster(cluster_dict)
+
+        cluster_dict = move_value_to_better_cluster(worst_cluster, p1, cluster_dict)
+        cluster_dict = move_value_to_better_cluster(worst_cluster, p2, cluster_dict)
+
+        if previous_distance == worst_cluster_distance:
+            break
+        previous_distance = worst_cluster_distance
+    return cluster_dict
+
+def move_value_to_better_cluster(cluster, point, cluster_dict):
+    cluster.remove(point)
+    new_score = max_intracluster_distance(cluster)[0]
+
+    best_cluster = []
+    best_score = 0
+    swaped = False
+
+    for key in cluster_dict.keys():
+        cluster_b = cluster_dict[key]
+        cluster_b.append(point)
+        # if the improved new score is still higher than cluster_b's score
+        if new_score >= max_intracluster_distance(cluster_b)[0] and cluster_b != cluster:
+            swaped = True
+            break
+        else:
+            cluster_b.remove(point)
+
+    if not swaped:
+        cluster.append(point)
+
+    return cluster_dict
 
 def read_input(file_name):
     f = open(file_name, "r")
@@ -52,22 +88,32 @@ def get_distance(p1, p2):
 # given a cluster, find the maximum distance between any two points in the cluster
 def max_intracluster_distance(cluster):
     max_distance = 0
+    max_p1 = ()
+    max_p2 = ()
     for p1 in cluster:
         for p2 in cluster:
             distance = get_distance(p1, p2)
             if distance > max_distance:
                 max_distance = distance
-    return max_distance
+                max_p1 = p1
+                max_p2 = p2
+    return max_distance, max_p1, max_p2
 
 
 # find and return the cluster with the maximum distance between any two points
-def get_max_distance_clusters(cluster_dict):
+def get_max_distance_cluster(cluster_dict):
     max_cluster_distance = 0
+    max_cluster = []
+    bad_point_a = ()
+    bad_point_b = ()
     for value in cluster_dict.values():
-        cluster_distance = max_intracluster_distance(value)
+        cluster_distance, p1, p2 = max_intracluster_distance(value)
         if cluster_distance > max_cluster_distance:
             max_cluster_distance = cluster_distance
-    return max_cluster_distance
+            max_cluster = value
+            bad_point_a = p1
+            bad_point_b = p2
+    return max_cluster, max_cluster_distance, bad_point_a, bad_point_b
 
 
 def format_output(max_cluster_distance, clusters):
@@ -95,12 +141,12 @@ def usage():
     solutions = ""
     for i in available_solutions:
         solutions += i + "|"
-    print(f"usage: solver.py [-h|--help] [-v|--verbose] --ifile ifile --ofile ofile --style [{solutions[:-1]}]")
+    print(f"usage: solver.py [-h|--help] [-v|--verbose] [-m|--midpoint] --ifile ifile --ofile ofile --style [{solutions[:-1]}]")
 
 
 def main(argv):
     try:
-        opts, cml_args = getopt.getopt(argv, "hvi:o:s:", ["help", "verbose", "ifile=", "ofile=", "style="])
+        opts, cml_args = getopt.getopt(argv, "hvi:o:s:", ["help", "verbose", "midpoint", "ifile=", "ofile=", "style="])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -109,6 +155,7 @@ def main(argv):
     ofile = ""
     style = ""
     verbose = False
+    midpoint = False
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
@@ -116,6 +163,8 @@ def main(argv):
             sys.exit(0)
         elif opt in ("-v", "--verbose"):
             verbose = True
+        elif opt in ("-m", "--midpoint"):
+            midpoint = True
         elif opt in ("-i", "--ifile"):
             ifile = str(arg)
         elif opt in ("-o", "--ofile"):
@@ -141,6 +190,7 @@ def main(argv):
         nameof(ofile): ofile,
         nameof(style): style,
         nameof(verbose): verbose,
+        nameof(midpoint): midpoint,
         nameof(n): n,
         nameof(k): k,
         nameof(points): points
@@ -160,8 +210,11 @@ def main(argv):
     for cluster, point in zip(clusters, points):
         cluster_dict.setdefault(cluster, []).append(point)
 
+    cluster_dict = optimize(cluster_dict)
+
     # compute the maximum distance within the clusters
-    worst_cluster_distance = get_max_distance_clusters(cluster_dict)
+
+    worst_cluster_distance = get_max_distance_cluster(cluster_dict)[1]
 
     output = format_output(worst_cluster_distance, clusters)
 
