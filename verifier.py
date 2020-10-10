@@ -52,6 +52,8 @@ def allTests(iDictionaryOfPoints, oListSets, numPoints, numSets, maxDistance):
         
         testsPass = True
         numSortedPoints = 0
+        duplicateChecker = []
+       
         
         #compare input k with the number of sets
         if (numSets != len(oListSets)):
@@ -70,22 +72,45 @@ def allTests(iDictionaryOfPoints, oListSets, numPoints, numSets, maxDistance):
             print("There are an incorrect number of points sorted")
             testsPass = False
             
+        if (len(iDictionaryOfPoints.keys()) != numSortedPoints): 
+             testsPass = False
+            
         #verify max distance is correct
         calculated_max_distance = 0
         max_distance_set = 0
-        for sets in oListSets:
-            for a in sets:
-                point1 = iDictionaryOfPoints[int(a)]
-                for b in sets:
-                    point2 = iDictionaryOfPoints[int(b)]
-                    x_distance = point1[0] - point2[0]
-                    y_distance = point1[1] - point2[1]
-                    z_distance = point1[2] - point2[2]
-                    total_distance = abs(x_distance) + abs(y_distance) + abs(z_distance)
-                    if calculated_max_distance < total_distance:
-                        calculated_max_distance = total_distance
-                        max_distance_set = sets
-                        
+   
+        try: 
+            for sets in oListSets:
+                for a in sets:
+                    point1 = iDictionaryOfPoints[int(a)]
+                    duplicateChecker.append(a) 
+                    for b in sets:
+                        point2 = iDictionaryOfPoints[int(b)]
+                        duplicateChecker.append(b)
+                        x_distance = point1[0] - point2[0]
+                        y_distance = point1[1] - point2[1]
+                        z_distance = point1[2] - point2[2]
+                        total_distance = abs(x_distance) + abs(y_distance) + abs(z_distance)
+                        if calculated_max_distance < total_distance:
+                            calculated_max_distance = total_distance
+                            max_distance_set = sets
+        except: 
+            print("There was a point in the output file that was out of bounds.")
+            return False
+        
+        for n in range(1, numPoints): 
+            if duplicateChecker.count(n):
+                continue
+            else: 
+                print("There was a duplciate located in the output sets. Invalid output")
+                return False
+            
+        
+        
+        #if (len(oListSets) != len(duplicateChecker)): 
+          #  print("There was a duplciate located in the output sets. Invalid output")
+           # return False
+                
         if maxDistance != calculated_max_distance:
             print("The max distance was incorrect for the following set")
             print(max_distance_set)
