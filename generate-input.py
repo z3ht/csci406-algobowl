@@ -104,7 +104,7 @@ def armyof5(n, k):
 @input_style("sphere")
 def sphere(n, k):
     output = set()
-    output.update(sphere(0, 0, 0, 100))
+    output.update(sphere(0, 0, 0, 100, 0.1))
     return list(output)
 
 

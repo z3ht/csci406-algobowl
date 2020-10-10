@@ -146,7 +146,7 @@ def usage():
 
 def main(argv):
     try:
-        opts, cml_args = getopt.getopt(argv, "hvi:o:s:", ["help", "verbose", "midpoint", "ifile=", "ofile=", "style="])
+        opts, cml_args = getopt.getopt(argv, "hmvi:o:s:", ["help", "verbose", "midpoint", "ifile=", "ofile=", "style="])
     except getopt.GetoptError:
         usage()
         sys.exit(2)

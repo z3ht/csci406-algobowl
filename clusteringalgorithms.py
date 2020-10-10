@@ -87,7 +87,7 @@ class KMeans:
 
     # the the Manhattan distance between two points
     def get_distance(self, p1, p2):
-        return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1]) + abs(p1[2] - p2[2])
+        return (abs(p1[0] - p2[0]) ** 2 + abs(p1[1] - p2[1]) ** 2 + abs(p1[2] - p2[2]) ** 2 ) ** 0.5
 
     def get_mean_point(self, cluster):
         if len(cluster) == 0:
