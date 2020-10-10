@@ -21,7 +21,7 @@ def readFiles(inputFileName, outputFileName):
         temp_list = []
         array_of_point_values = []
         for value in iDictionaryValues:
-            temp_list = value.split()
+            temp_list = value.split(" ")
             for point in range(len(temp_list)):
                 temp_list[point] = int(temp_list[point])
             i_point_values.append(temp_list)
@@ -33,15 +33,20 @@ def readFiles(inputFileName, outputFileName):
         #read in the list of output sets
         o_sets = oFile.readlines()
         #pop the maxlength
+        
         maxDistance = int(o_sets[0])
+        if o_sets[0] != str(maxDistance): 
+            raise Exception()
+            
         o_sets.pop(0)        
         oListSets = []   
         for value in o_sets:
-            temp_list = value.split()
+            temp_list = value.split(" ")
             for point in range(len(temp_list)):
                 temp_list[point] = int(temp_list[point])
             oListSets.append(temp_list)
-        
+    
+            
         
         
         
@@ -78,6 +83,7 @@ def allTests(iDictionaryOfPoints, oListSets, numPoints, numSets, maxDistance):
         #verify max distance is correct
         calculated_max_distance = 0
         max_distance_set = 0
+        print(oListSets)
    
         try: 
             for sets in oListSets:
@@ -125,14 +131,18 @@ def ourAlgorithm():
 
 
 def main(): 
-    testInput = "TRUERandinput.txt"
-    testOutput = "TRUERandoutput.txt"
+    testInput = "./bad_output/test13/exampleinput.txt"
+    testOutput = "./bad_output/test13/exampleoutput.txt"
     
-    fileSpecs = readFiles(testInput, testOutput)
-    verifier = allTests(fileSpecs[0], fileSpecs[1], fileSpecs[2], fileSpecs[3], fileSpecs[4])
-    print("The time it took to run this program is: ")
-    print(format((time.time() - start_time), '.014f'))
-    print(verifier)
+    try: 
+        fileSpecs = readFiles(testInput, testOutput)
+        verifier = allTests(fileSpecs[0], fileSpecs[1], fileSpecs[2], fileSpecs[3], fileSpecs[4])
+        print("The time it took to run this program is: ")
+        print(format((time.time() - start_time), '.014f'))
+        print(verifier)
+    except: 
+          print("The following I/O set has an extraneous space in it. That is an invalid I/O.")
+          print(False)
 
 if __name__ == "__main__":   #Calls main
     main()
