@@ -131,8 +131,8 @@ def ourAlgorithm():
 
 
 def main(): 
-    testInput = "./bad_output/test13/exampleinput.txt"
-    testOutput = "./bad_output/test13/exampleoutput.txt"
+    testInput = "finalTestinput.txt"
+    testOutput = "finalTestoutput.txt"
     
     try: 
         fileSpecs = readFiles(testInput, testOutput)
