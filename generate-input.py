@@ -51,10 +51,10 @@ def onlyx_uniform(n, k):
         output.append([i, 0, 0])
     return output
 
-@input_style("randomizerFunction") 
+@input_style("random")
 def randomizerFunction(n, k): 
     output = []
-    for i in range(n):
+    for x in range(n):
         i = random.randrange(-1000, 1000, 1) 
         j = random.randrange(-1000, 1000, 1)
         k = random.randrange(-1000, 1000, 1)
@@ -102,19 +102,42 @@ def armyof5(n, k):
 
 
 @input_style("square")
-def square(n, k):
-    output = []
-    for y in range(0, 50, 10):
-        for x in range(0, 50, 10):
-            output.append((x, y, 0))
-    return output
+def definitelynotasquare(n, k):
+    output = set()
+    output.update(square(0, 0, 0, 100, 10))
+    return list(output)
 
 
 @input_style("sphere")
-def sphere(n, k):
+def definitelynotasphere(n, k):
     output = set()
     output.update(sphere(0, 0, 0, 100, 0.1))
     return list(output)
+
+@input_style("trisphere")
+def trisphere(n, k):
+    output = set()
+    output.update(sphere(0, 0, 0, 40, 0.2))
+    output.update(sphere(-10, -85, 0, 25, 0.2))
+    output.update(sphere(-40, -75, 0, 15, 0.2))
+    return list(output)
+
+@input_style("armyof3")
+def armyof3(n, k):
+    output = set()
+    output.update(square(0, 0, 0, 10, 1))
+    # output.update(square(100, 0, 0, 10, 1))
+    # output.update(square(0, 100, 0, 10, 1))
+    output.update(square(0, 0, 100, 10, 1))
+    return output
+
+
+def square(x1, y1, z1, length, delta=1):
+    output = []
+    for y in range(0, length, delta):
+        for x in range(0, length, delta):
+            output.append((x+x1, y+y1, 0+z1))
+    return output
 
 
 def sphere(x1=0, y1=0, z1=0, r=0, density=0.6):

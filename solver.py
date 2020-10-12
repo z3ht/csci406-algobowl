@@ -58,7 +58,7 @@ def organize_clusters(cluster_dict, solution):
             for cluster, point in zip(output, points):
                 new_cluster_dict[cluster].append(point)
             new_max_distance = get_max_distance_cluster(new_cluster_dict)[1]
-            if new_max_distance >= max_distance:
+            if new_max_distance > max_distance:
                 continue
             free_clusters += (len(core) - k)
             add_ind = 0
@@ -254,6 +254,8 @@ def main(argv):
 
     cluster_dict = optimize_points(cluster_dict)
     free_clusters, cluster_dict = organize_clusters(cluster_dict, cur_solution)
+    if free_clusters != 0:
+        raise Exception(f"Inefficient use of clusters. {free_clusters} free clusters unused")
 
     # compute the maximum distance within the clusters
 
