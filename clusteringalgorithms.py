@@ -68,9 +68,9 @@ class KMeans:
 
     def initial_points(self, points):
         # The odds of this being an actual centroid are monumentally low. It is very important it is not
-        self.centroids[tuple([-1871237723123, -1871237723123, -1871237723123])] = set(
-            tuple([-1871237723123, -1871237723123, -1871237723123])
-        )
+        self.centroids = {
+            tuple([-1871237723123, -1871237723123, -1871237723123]): set(tuple([-1871237723123, -1871237723123, -1871237723123]))
+        }
 
         while len(self.centroids) <= self.k:
             max_dist = -1
@@ -81,7 +81,8 @@ class KMeans:
                 if dist > max_dist:
                     max_dist = dist
                     next_furthest = point
-            self.centroids[next_furthest] = set(next_furthest)
+            if next_furthest is not None:
+                self.centroids[next_furthest] = set(next_furthest)
 
         self.centroids.pop(tuple([-1871237723123, -1871237723123, -1871237723123]))
 

@@ -101,6 +101,15 @@ def armyof5(n, k):
     return list(output)
 
 
+@input_style("square")
+def square(n, k):
+    output = []
+    for y in range(0, 50, 10):
+        for x in range(0, 50, 10):
+            output.append((x, y, 0))
+    return output
+
+
 @input_style("sphere")
 def sphere(n, k):
     output = set()

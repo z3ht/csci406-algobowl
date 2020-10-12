@@ -21,7 +21,7 @@ def solution(solution_name):
 
 
 @solution("kmeans")
-def kmeans(k, points, verbose, midpoint):
+def kmeans(k, points, verbose=False, midpoint=False):
     return KMeans(k).cluster(points, verbose=verbose, midpoint=midpoint)
 
 
@@ -30,41 +30,87 @@ def kmeans(k, points):
     return KMeansLib(n_clusters=k, n_init=20).fit_predict(np.asarray(points))
 
 
-def optimize(cluster_dict):
-    previous_distance = 0
+def organize_clusters(cluster_dict, solution):
+    worst_cluster, max_distance = get_max_distance_cluster(cluster_dict)[0:2]
+    cores = []
+    for i, left in cluster_dict.items():
+        cur_core = None
+        for core in cores:
+            if tuple(left) in core:
+                cur_core = core
+        if cur_core is None:
+            cur_core = set()
+            cur_core.add(tuple(left))
+            cores.append(cur_core)
+        for j, right in cluster_dict.items():
+            combined = left.copy()
+            combined.extend(right)
+            if max_intracluster_distance(combined)[0] < max_distance:
+                cur_core.add(tuple(right))
+    free_clusters = 0
+    for core in cores:
+        for k in range(1, len(core)):
+            points = []
+            for cluster in core:
+                points.extend(cluster)
+            output = solution(k, points)
+            new_cluster_dict = defaultdict(list)
+            for cluster, point in zip(output, points):
+                new_cluster_dict[cluster].append(point)
+            new_max_distance = get_max_distance_cluster(new_cluster_dict)[1]
+            if new_max_distance >= max_distance:
+                continue
+            free_clusters += (len(core) - k)
+            add_ind = 0
+            for del_cluster in core:
+                for ind, cluster in cluster_dict.items():
+                    if del_cluster != tuple(cluster):
+                        continue
+                    if add_ind < len(new_cluster_dict):
+                        cluster_dict[ind] = new_cluster_dict[add_ind]
+                        add_ind += 1
+                    else:
+                        del cluster_dict[ind]
+                    break
+            break
+    return free_clusters, cluster_dict
+
+
+def optimize_points(cluster_dict):
     while True:
-        worst_cluster, worst_cluster_distance, p1, p2 = get_max_distance_cluster(cluster_dict)
+        worst_cluster, prev_cluster_distance, p1, p2 = get_max_distance_cluster(cluster_dict)
 
         cluster_dict = move_value_to_better_cluster(worst_cluster, p1, cluster_dict)
         cluster_dict = move_value_to_better_cluster(worst_cluster, p2, cluster_dict)
 
-        if previous_distance == worst_cluster_distance:
+        worst_cluster, new_cluster_distance, p1, p2 = get_max_distance_cluster(cluster_dict)
+        if prev_cluster_distance == new_cluster_distance:
             break
-        previous_distance = worst_cluster_distance
+
     return cluster_dict
+
 
 def move_value_to_better_cluster(cluster, point, cluster_dict):
     cluster.remove(point)
     new_score = max_intracluster_distance(cluster)[0]
 
-    best_cluster = []
-    best_score = 0
-    swaped = False
+    swapped = False
 
     for key in cluster_dict.keys():
         cluster_b = cluster_dict[key]
         cluster_b.append(point)
         # if the improved new score is still higher than cluster_b's score
         if new_score >= max_intracluster_distance(cluster_b)[0] and cluster_b != cluster:
-            swaped = True
+            swapped = True
             break
         else:
             cluster_b.remove(point)
 
-    if not swaped:
+    if not swapped:
         cluster.append(point)
 
     return cluster_dict
+
 
 def read_input(file_name):
     f = open(file_name, "r")
@@ -116,17 +162,13 @@ def get_max_distance_cluster(cluster_dict):
     return max_cluster, max_cluster_distance, bad_point_a, bad_point_b
 
 
-def format_output(max_cluster_distance, clusters):
-    clusters_point_dict = defaultdict(list)
+def format_output(max_cluster_distance, cluster_dict, points):
     output = [str(max_cluster_distance) + "\n"]
-    for i in range(len(clusters)):
-        clusters_point_dict[clusters[i]].append(i + 1)
-    for cluster, points in clusters_point_dict.items():
+    for i, cluster in cluster_dict.items():
         line = ""
-        for point in points:
-            line += str(point) + " "
-        line = line[:-1] + "\n"
-        output.append(line)
+        for point in cluster:
+            line += str(points.index(point) + 1) + " "
+        output.append(line[:-1] + "\n")
     output[-1] = output[-1][:-1]
     return output
 
@@ -210,13 +252,14 @@ def main(argv):
     for cluster, point in zip(clusters, points):
         cluster_dict.setdefault(cluster, []).append(point)
 
-    cluster_dict = optimize(cluster_dict)
+    cluster_dict = optimize_points(cluster_dict)
+    free_clusters, cluster_dict = organize_clusters(cluster_dict, cur_solution)
 
     # compute the maximum distance within the clusters
 
     worst_cluster_distance = get_max_distance_cluster(cluster_dict)[1]
 
-    output = format_output(worst_cluster_distance, clusters)
+    output = format_output(worst_cluster_distance, cluster_dict, points)
 
     if verbose:
         print(output)
