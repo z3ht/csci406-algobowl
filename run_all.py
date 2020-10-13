@@ -6,6 +6,7 @@
 # I wrote this specifically for my computer. It may not work for yours. Please don't change it though
 # I wrote this specifically for my computer. It may not work for yours. Please don't change it though
 # I wrote this specifically for my computer. It may not work for yours. Please don't change it though
+
 import os
 import sys
 import getopt
@@ -40,6 +41,7 @@ def main(argv):
         output = path + (output_format % num_group)
         command = f'./solver.py --ifile {input} --ofile {output} --style kmeans'
         os.system(command)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

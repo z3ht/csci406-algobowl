@@ -24,22 +24,20 @@ def solution(solution_name):
 def begin_kmeans_thread(worker_num, output_dict, k, points, dist_quant, linkage_criteria, verbose):
     output = KMeans(k=k, dist_quant=dist_quant, linkage_criteria=linkage_criteria).cluster(points, verbose=verbose)
     cur_cluster_dict = gen_cluster_dict(output, points)
+    cur_cluster_dict = optimize_points(cur_cluster_dict)
     worst_cluster_distance = get_max_distance_cluster(cur_cluster_dict)[1]
     output_dict[worker_num] = tuple([worst_cluster_distance, output])
 
 
 @solution("kmeans")
 def kmeans(k, points, verbose=False):
-    dist_quants = [1, 2, 3, 4, 5]
-    linkage_criterias = ["unweighted", "midpoint"]
-
     manager = multiprocessing.Manager()
     return_dict = manager.dict()
     workers = []
 
     i = 0
-    for dist_quant in dist_quants:
-        for linkage_criteria in linkage_criterias:
+    for dist_quant in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
+        for linkage_criteria in ["unweighted", "midpoint"]:
             worker = multiprocessing.Process(
                 target=begin_kmeans_thread,
                 args=(i, return_dict, k, points, dist_quant, linkage_criteria, verbose)

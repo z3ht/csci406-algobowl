@@ -3,7 +3,7 @@ import numpy as np
 
 class KMeans:
 
-    def __init__(self, k, dist_quant, linkage_criteria):
+    def __init__(self, k, initial_points, dist_quant, linkage_criteria, initial_points):
         """
         Initialize KMeans estimator
 
@@ -12,9 +12,11 @@ class KMeans:
         :param k: Number of clusters
         :param dist_quant: Distance metric (1=manhattan, 2=euclidean, ...)
         :param linkage_criteria: Available options: 'midpoint', 'complete', 'single', 'unweighted', 'wards'
+        :param initial_points: Initial points creation function. Options: 'furthest', 'stacked'
         """
         self.k = k
         self.dist_quant = dist_quant
+
         linkage_criteria_dict = {
             "midpoint": self.get_center_point,
             "unweighted": self.get_mean_point
@@ -24,6 +26,15 @@ class KMeans:
         else:
             self.linkage_criteria = linkage_criteria
 
+        initial_points_dict = {
+            "furthest": self.furthest_initial_points,
+            "stacked": self.stacked_initial_points
+        }
+        if initial_points.lower() in initial_points_dict:
+            self.furthest_initial_points = initial_points_dict[initial_points.lower()]
+        else:
+            self.furthest_initial_points = initial_points
+
     centroids = dict()
     k = 1
     max_iterations = 1000
@@ -31,7 +42,7 @@ class KMeans:
     def cluster(self, points, verbose=False):
         self.points = points
 
-        self.initial_points(points)
+        self.furthest_initial_points(points)
 
         if verbose:
             print(f"Here are the initial centroids: {self.centroids.keys()}")
