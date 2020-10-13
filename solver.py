@@ -29,6 +29,25 @@ def begin_kmeans_thread(worker_num, output_dict, k, initial_points, dist_quant, 
     output_dict[worker_num] = tuple([worst_cluster_distance, output])
 
 
+@solution("sp_kmeans")
+def sp_kmeans(k, points):
+    return_dict = {}
+
+    i = 0
+    for dist_quant in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
+        for linkage_criteria in ["unweighted", "midpoint"]:
+            for initial_points in ["stacked", "furthest"]:
+                begin_kmeans_thread(i, return_dict, k, initial_points, dist_quant, linkage_criteria, verbose, points)
+                i += 1
+
+    best = (sys.maxsize, None)
+    for output in return_dict.values():
+        if output[0] < best[0]:
+            best = output
+
+    return best[1]
+
+
 @solution("kmeans")
 def kmeans(k, points, verbose=False):
     manager = multiprocessing.Manager()

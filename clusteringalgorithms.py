@@ -70,6 +70,7 @@ class KMeans:
 
             for c in list(self.centroids.keys()):
                 cluster = self.centroids.get(c)
+                print(cluster)
                 cluster_mean = self.linkage_criteria(cluster)
                 self.centroids[cluster_mean] = self.centroids.pop(c)
             i += 1
