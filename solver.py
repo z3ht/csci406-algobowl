@@ -30,7 +30,7 @@ def begin_kmeans_thread(worker_num, output_dict, k, initial_points, dist_quant, 
 
 
 @solution("sp_kmeans")
-def sp_kmeans(k, points):
+def sp_kmeans(k, points, verbose=False):
     return_dict = {}
 
     i = 0
