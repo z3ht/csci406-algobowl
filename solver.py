@@ -8,6 +8,7 @@ import getopt
 from inspect import signature
 from varname import nameof
 from collections import defaultdict
+import multiprocessing
 
 available_solutions = {}
 
@@ -20,19 +21,41 @@ def solution(solution_name):
     return inner_decorator
 
 
+def begin_kmeans_thread(worker_num, output_dict, k, points, dist_quant, linkage_criteria, verbose):
+    output = KMeans(k=k, dist_quant=dist_quant, linkage_criteria=linkage_criteria).cluster(points, verbose=verbose)
+    cur_cluster_dict = gen_cluster_dict(output, points)
+    worst_cluster_distance = get_max_distance_cluster(cur_cluster_dict)[1]
+    output_dict[worker_num] = tuple([worst_cluster_distance, output])
+
+
 @solution("kmeans")
 def kmeans(k, points, verbose=False):
-    best_score = sys.maxsize
-    best_output = None
-    for dist_quant in [1, 2, 3, 4, 5]:
-        for linkage_criteria in ["unweighted", "midpoint"]:
-            cur_clusters = KMeans(k=k, dist_quant=dist_quant, linkage_criteria=linkage_criteria).cluster(points, verbose=verbose)
-            cur_cluster_dict = gen_cluster_dict(cur_clusters, points)
-            worst_cluster_distance = get_max_distance_cluster(cur_cluster_dict)[1]
-            if worst_cluster_distance < best_score:
-                best_score = worst_cluster_distance
-                best_output = cur_clusters
-    return best_output
+    dist_quants = [1, 2, 3, 4, 5]
+    linkage_criterias = ["unweighted", "midpoint"]
+
+    manager = multiprocessing.Manager()
+    return_dict = manager.dict()
+    workers = []
+
+    i = 0
+    for dist_quant in dist_quants:
+        for linkage_criteria in linkage_criterias:
+            worker = multiprocessing.Process(
+                target=begin_kmeans_thread,
+                args=(i, return_dict, k, points, dist_quant, linkage_criteria, verbose)
+            )
+            workers.append(worker)
+            worker.start()
+            i += 1
+
+    for worker in workers:
+        worker.join()
+
+    best = (sys.maxsize, None)
+    for output in return_dict.values():
+        if output[0] < best[0]:
+            best = output
+    return best[1]
 
 
 @solution("kmeanslib")
