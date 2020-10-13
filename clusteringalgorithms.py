@@ -96,26 +96,6 @@ class KMeans:
 
         return result_list
 
-    def furthest_initial_points(self, points):
-        # The odds of this being an actual centroid are monumentally low. It is very important it is not
-        self.centroids = {
-            tuple([-1871237723123, -1871237723123, -1871237723123]): set(tuple([-1871237723123, -1871237723123, -1871237723123]))
-        }
-
-        while len(self.centroids) <= self.k:
-            max_dist = -1
-            next_furthest = None
-            for point in points:
-                centroid = self.find_closest_centroid(point)
-                dist = self.get_distance(point, centroid)
-                if dist > max_dist:
-                    max_dist = dist
-                    next_furthest = point
-            if next_furthest is not None:
-                self.centroids[next_furthest] = set(next_furthest)
-
-        self.centroids.pop(tuple([-1871237723123, -1871237723123, -1871237723123]))
-
     # the the Manhattan distance between two points
     def get_distance(self, p1, p2):
         return (abs(p1[0] - p2[0]) ** self.dist_quant + abs(p1[1] - p2[1]) ** self.dist_quant + abs(p1[2] - p2[2]) ** self.dist_quant ) ** float(1/self.dist_quant)
@@ -165,3 +145,23 @@ class KMeans:
 
         for z in z_points:
             self.centroids[tuple([0, 0, z])] = set(tuple([0, 0, z]))
+
+    def furthest_initial_points(self, points):
+        # The odds of this being an actual centroid are monumentally low. It is very important it is not
+        self.centroids = {
+            tuple([-1871237723123, -1871237723123, -1871237723123]): set(tuple([-1871237723123, -1871237723123, -1871237723123]))
+        }
+
+        while len(self.centroids) <= self.k:
+            max_dist = -1
+            next_furthest = None
+            for point in points:
+                centroid = self.find_closest_centroid(point)
+                dist = self.get_distance(point, centroid)
+                if dist > max_dist:
+                    max_dist = dist
+                    next_furthest = point
+            if next_furthest is not None:
+                self.centroids[next_furthest] = set(next_furthest)
+
+        self.centroids.pop(tuple([-1871237723123, -1871237723123, -1871237723123]))

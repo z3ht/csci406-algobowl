@@ -38,7 +38,7 @@ def kmeans(k, points, verbose=False):
     i = 0
     for dist_quant in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
         for linkage_criteria in ["unweighted", "midpoint"]:
-            for initial_points in ["stacked", "furthest", "random"]:
+            for initial_points in ["stacked", "furthest"]:
                 worker = multiprocessing.Process(
                     target=begin_kmeans_thread,
                     args=(i, return_dict, k, initial_points, dist_quant, linkage_criteria, verbose, points)
