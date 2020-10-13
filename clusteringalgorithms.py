@@ -31,9 +31,9 @@ class KMeans:
             "stacked": self.stacked_initial_points
         }
         if initial_points.lower() in initial_points_dict:
-            self.furthest_initial_points = initial_points_dict[initial_points.lower()]
+            self.initial_points = initial_points_dict[initial_points.lower()]
         else:
-            self.furthest_initial_points = initial_points
+            self.initial_points = initial_points
 
     centroids = dict()
     k = 1
@@ -42,7 +42,7 @@ class KMeans:
     def cluster(self, points, verbose=False):
         self.points = points
 
-        self.furthest_initial_points(points)
+        self.initial_points(points)
 
         if verbose:
             print(f"Here are the initial centroids: {self.centroids.keys()}")
@@ -96,7 +96,7 @@ class KMeans:
 
         return result_list
 
-    def initial_points(self, points):
+    def furthest_initial_points(self, points):
         # The odds of this being an actual centroid are monumentally low. It is very important it is not
         self.centroids = {
             tuple([-1871237723123, -1871237723123, -1871237723123]): set(tuple([-1871237723123, -1871237723123, -1871237723123]))
