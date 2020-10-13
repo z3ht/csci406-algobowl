@@ -73,7 +73,8 @@ class KMeans:
                 cluster = self.centroids.get(c)
                 print(cluster)
                 cluster_mean = self.linkage_criteria(cluster)
-                self.centroids[cluster_mean] = self.centroids.pop(c)
+                if cluster_mean != -1:
+                    self.centroids[cluster_mean] = self.centroids.pop(c)
             i += 1
 
             # if the centroids do not change they never will, break from the loop
