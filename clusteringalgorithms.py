@@ -42,6 +42,7 @@ class KMeans:
     def cluster(self, points, verbose=False):
         self.points = points
 
+        self.centroids = {}
         self.initial_points(points)
 
         if verbose:
