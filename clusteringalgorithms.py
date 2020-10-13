@@ -159,5 +159,9 @@ class KMeans:
                     max_distance = distance
         return max_distance
 
-    def converged(self, previous):
-        pass
+    def stacked_initial_points(self, points):
+        diff = 2000 / (self.k + 1)
+        z_points = [(-1000 + diff) + i * diff for i in range(self.k)]
+
+        for z in z_points:
+            self.centroids[tuple([0, 0, z])] = set(tuple([0, 0, z]))
