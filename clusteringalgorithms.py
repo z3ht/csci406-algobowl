@@ -24,8 +24,6 @@ class KMeans:
         else:
             self.linkage_criteria = linkage_criteria
 
-
-    points = []
     centroids = dict()
     k = 1
     max_iterations = 1000
@@ -37,8 +35,8 @@ class KMeans:
 
         if verbose:
             print(f"Here are the initial centroids: {self.centroids.keys()}")
-            print(f"Now clustering with midpoint={midpoint}")
 
+        previous_centroids = []
         # Repeat steps 4 and 5 until convergence or until the end of a fixed number of iterations
         i = 0
         while i < self.max_iterations:
@@ -64,6 +62,11 @@ class KMeans:
                 cluster_mean = self.linkage_criteria(cluster)
                 self.centroids[cluster_mean] = self.centroids.pop(c)
             i += 1
+
+            # if the centroids do not change they never will, break from the loop
+            if list(self.centroids.keys()) == previous_centroids:
+                break
+            previous_centroids = list(self.centroids.keys())
 
         cluster_idx = 0
         result_list = []
@@ -144,3 +147,6 @@ class KMeans:
                 if distance > max_distance:
                     max_distance = distance
         return max_distance
+
+    def converged(self, previous):
+        pass
