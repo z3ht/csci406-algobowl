@@ -3,7 +3,7 @@ import numpy as np
 
 class KMeans:
 
-    def __init__(self, k, initial_points, dist_quant, linkage_criteria, initial_points):
+    def __init__(self, k, initial_points, dist_quant, linkage_criteria):
         """
         Initialize KMeans estimator
 

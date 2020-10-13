@@ -21,8 +21,8 @@ def solution(solution_name):
     return inner_decorator
 
 
-def begin_kmeans_thread(worker_num, output_dict, k, points, dist_quant, linkage_criteria, verbose):
-    output = KMeans(k=k, dist_quant=dist_quant, linkage_criteria=linkage_criteria).cluster(points, verbose=verbose)
+def begin_kmeans_thread(worker_num, output_dict, k, initial_points, dist_quant, linkage_criteria, verbose, points):
+    output = KMeans(k=k, initial_points=initial_points, dist_quant=dist_quant, linkage_criteria=linkage_criteria).cluster(points, verbose=verbose)
     cur_cluster_dict = gen_cluster_dict(output, points)
     cur_cluster_dict = optimize_points(cur_cluster_dict)
     worst_cluster_distance = get_max_distance_cluster(cur_cluster_dict)[1]
@@ -38,13 +38,14 @@ def kmeans(k, points, verbose=False):
     i = 0
     for dist_quant in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
         for linkage_criteria in ["unweighted", "midpoint"]:
-            worker = multiprocessing.Process(
-                target=begin_kmeans_thread,
-                args=(i, return_dict, k, points, dist_quant, linkage_criteria, verbose)
-            )
-            workers.append(worker)
-            worker.start()
-            i += 1
+            for initial_points in ["stacked", "furthest", "random"]:
+                worker = multiprocessing.Process(
+                    target=begin_kmeans_thread,
+                    args=(i, return_dict, k, initial_points, dist_quant, linkage_criteria, verbose, points)
+                )
+                workers.append(worker)
+                worker.start()
+                i += 1
 
     for worker in workers:
         worker.join()
