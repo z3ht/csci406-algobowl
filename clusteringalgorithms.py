@@ -3,15 +3,34 @@ import numpy as np
 
 class KMeans:
 
-    def __init__(self, k):
+    def __init__(self, k, dist_quant, linkage_criteria):
+        """
+        Initialize KMeans estimator
+
+        Parameters
+        ----------
+        :param k: Number of clusters
+        :param dist_quant: Distance metric (1=manhattan, 2=euclidean, ...)
+        :param linkage_criteria: Available options: 'midpoint', 'complete', 'single', 'unweighted', 'wards'
+        """
         self.k = k
+        self.dist_quant = dist_quant
+        linkage_criteria_dict = {
+            "midpoint": self.get_center_point,
+            "unweighted": self.get_mean_point
+        }
+        if linkage_criteria.lower() in linkage_criteria_dict:
+            self.linkage_criteria = linkage_criteria_dict[linkage_criteria.lower()]
+        else:
+            self.linkage_criteria = linkage_criteria
+
 
     points = []
     centroids = dict()
     k = 1
     max_iterations = 1000
 
-    def cluster(self, points, verbose=False, midpoint=False):
+    def cluster(self, points, verbose=False):
         self.points = points
 
         self.initial_points(points)
@@ -42,10 +61,7 @@ class KMeans:
 
             for c in list(self.centroids.keys()):
                 cluster = self.centroids.get(c)
-                if midpoint:
-                    cluster_mean = self.get_center_point(cluster)
-                else:
-                    cluster_mean = self.get_mean_point(cluster)
+                cluster_mean = self.linkage_criteria(cluster)
                 self.centroids[cluster_mean] = self.centroids.pop(c)
             i += 1
 
@@ -88,7 +104,7 @@ class KMeans:
 
     # the the Manhattan distance between two points
     def get_distance(self, p1, p2):
-        return (abs(p1[0] - p2[0]) ** 2 + abs(p1[1] - p2[1]) ** 2 + abs(p1[2] - p2[2]) ** 2 ) ** 0.5
+        return (abs(p1[0] - p2[0]) ** self.dist_quant + abs(p1[1] - p2[1]) ** self.dist_quant + abs(p1[2] - p2[2]) ** self.dist_quant ) ** float(1/self.dist_quant)
 
     def get_mean_point(self, cluster):
         if len(cluster) == 0:

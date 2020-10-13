@@ -21,13 +21,30 @@ def solution(solution_name):
 
 
 @solution("kmeans")
-def kmeans(k, points, verbose=False, midpoint=False):
-    return KMeans(k).cluster(points, verbose=verbose, midpoint=midpoint)
+def kmeans(k, points, verbose=False):
+    best_score = sys.maxsize
+    best_output = None
+    for dist_quant in [1, 2, 3, 4, 5]:
+        for linkage_criteria in ["unweighted", "midpoint"]:
+            cur_clusters = KMeans(k=k, dist_quant=dist_quant, linkage_criteria=linkage_criteria).cluster(points, verbose=verbose)
+            cur_cluster_dict = gen_cluster_dict(cur_clusters, points)
+            worst_cluster_distance = get_max_distance_cluster(cur_cluster_dict)[1]
+            if worst_cluster_distance < best_score:
+                best_score = worst_cluster_distance
+                best_output = cur_clusters
+    return best_output
 
 
 @solution("kmeanslib")
 def kmeans(k, points):
     return KMeansLib(n_clusters=k, n_init=20).fit_predict(np.asarray(points))
+
+
+def gen_cluster_dict(clusters, points):
+    cluster_dict = dict()
+    for cluster, point in zip(clusters, points):
+        cluster_dict.setdefault(cluster, []).append(point)
+    return cluster_dict
 
 
 def organize_clusters(cluster_dict, solution):
@@ -255,7 +272,7 @@ def main(argv):
     cluster_dict = optimize_points(cluster_dict)
     free_clusters, cluster_dict = organize_clusters(cluster_dict, cur_solution)
     if free_clusters != 0:
-        raise Exception(f"Inefficient use of clusters. {free_clusters} free clusters unused")
+        print(f"WARNING:: Inefficient use of clusters. {free_clusters} free clusters unused")
 
     # compute the maximum distance within the clusters
 
