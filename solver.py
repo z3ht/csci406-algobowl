@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import numpy as np
-from clusteringalgorithms import KMeans, Square
+from clusteringalgorithms import KMeans, Square, cubes
 from sklearn.cluster import KMeans as KMeansLib
 import sys
 import getopt
@@ -37,7 +37,7 @@ def begin_kmeans_thread(
 @solution("s_kmeans")
 def sp_kmeans(k, points, verbose=False):
     return KMeans(
-        k=k, initial_points="furthest", dist_quant=2, central_value="mean", join_criteria="closest_centroid"
+        k=k, initial_points="cubed", dist_quant=1, central_value="mean", join_criteria="closest_centroid"
     ).cluster(points, verbose=verbose)
 
 
@@ -48,8 +48,8 @@ def sp_kmeans(k, points, verbose=False):
     i = 0
     for dist_quant in [1, 2, 3, 4, 5]:
         for central_value in ["mean", "midpoint", "static"]:
-            for initial_points in ["stacked", "furthest"]:
-                for join_criteria in ["closest_centroid"]:
+            for initial_points in cubes(points, k) + ["stacked", "furthest"]:
+                for join_criteria in ["closest_centroid", "closest_furthest"]:
                     begin_kmeans_thread(
                         i, return_dict, k, initial_points, dist_quant, central_value, join_criteria, points, verbose
                     )
@@ -72,7 +72,7 @@ def kmeans(k, points, verbose=False):
     i = 0
     for dist_quant in [1, 2, 3, 4, 5]:
         for central_value in ["mean", "midpoint", "static"]:
-            for initial_points in ["stacked", "furthest"]:
+            for initial_points in cubes(points, k) + ["stacked", "furthest"]:
                 for join_criteria in ["closest_centroid", "closest_furthest"]:
                     worker = multiprocessing.Process(
                         target=begin_kmeans_thread,
@@ -96,7 +96,7 @@ def kmeans(k, points, verbose=False):
 
 
 @solution("kmeanslib")
-def kmeans(k, points):
+def kmeanslib(k, points):
     return KMeansLib(n_clusters=k, n_init=20).fit_predict(np.asarray(points))
 
 

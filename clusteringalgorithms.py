@@ -1,7 +1,8 @@
 import sys
-from math import floor
+from math import floor, ceil
 
 import numpy as np
+import multiprocessing
 
 
 def get_min_maxs(points):
@@ -10,6 +11,45 @@ def get_min_maxs(points):
     z = [p[2] for p in points]
 
     return min(x), max(x), min(y), max(y), min(z), max(z)
+
+
+def base(max, min, total):
+    return (max - min)/total
+
+
+def cubes(points, k):
+    x_min, x_max, y_min, y_max, z_min, z_max = get_min_maxs(points)
+
+    best = sys.maxsize
+    outputs = set()
+    for x in range(k + 1):
+        for y in range(k + 1):
+            for z in range(k + 1):
+                square_size = x**2 + y**2 + z**2
+                if x * y * z == k and square_size < best:
+                    best = square_size
+                    outputs.clear()
+                    outputs.add(tuple([x, y, z]))
+                    outputs.add(tuple([x, z, y]))
+                    outputs.add(tuple([y, x, z]))
+                    outputs.add(tuple([y, z, x]))
+                    outputs.add(tuple([z, y, x]))
+                    outputs.add(tuple([z, x, y]))
+
+    results = []
+    for best in outputs:
+        result = {}
+        for x in range(best[0]):
+            for y in range(best[1]):
+                for z in range(best[2]):
+                    val = tuple([int(base(x_max, x_min, best[0]) * ((x + 0.5) - best[0] / 2)),
+                                int(base(y_max, y_min, best[1]) * ((y + 0.5) - best[1] / 2)),
+                                int(base(z_max, z_min, best[2]) * ((z + 0.5) - best[2] / 2))])
+                    value = set()
+                    value.add(val)
+                    result[val] = value
+        results.append(lambda _: result)
+    return results
 
 
 class KMeans:
@@ -34,7 +74,7 @@ class KMeans:
             "mean": self.get_mean_point,
             "static": self.keep_centroid
         }
-        if central_value.lower() in linkage_criteria_dict:
+        if isinstance(central_value, str) and central_value.lower() in linkage_criteria_dict:
             self.central_value = linkage_criteria_dict[central_value.lower()]
         else:
             self.central_value = central_value
@@ -43,7 +83,7 @@ class KMeans:
             "closest_centroid": self.find_closest_centroid,
             "closest_furthest": self.find_min_furthest          # VERY BAD; DO NOT USE
         }
-        if join_criteria.lower() in join_criteria_dict:
+        if isinstance(join_criteria, str) and join_criteria.lower() in join_criteria_dict:
             self.join_criteria = join_criteria_dict[join_criteria.lower()]
         else:
             self.join_criteria = join_criteria
@@ -52,7 +92,7 @@ class KMeans:
             "furthest": self.furthest_initial_points,
             "stacked": self.stacked_initial_points
         }
-        if initial_points.lower() in initial_points_dict:
+        if isinstance(initial_points, str) and initial_points.lower() in initial_points_dict:
             self.initial_points = initial_points_dict[initial_points.lower()]
         else:
             self.initial_points = initial_points
@@ -65,7 +105,9 @@ class KMeans:
         self.points = points
 
         self.centroids = {}
-        self.initial_points(points)
+        result = self.initial_points(points)
+        if result is not None:
+            self.centroids = result
 
         if verbose:
             print(f"Here are the initial centroids: {self.centroids.keys()}")
@@ -179,22 +221,15 @@ class KMeans:
                     max_distance = distance
         return max_distance
 
-    def base(self, min, max):
-        return (max - min)/self.k + min
-
     def stacked_initial_points(self, points):
         x_min, x_max, y_min, y_max, z_min, z_max = get_min_maxs(points)
 
-        x_points = floor(self.k ** (1/3))
-        y_points = floor((self.k // x_points) ** (1/2))
-        z_points = floor((self.k // (x_points * y_points)))
+        base = (z_max - z_min)/self.k + z_min
 
-        for x in range(x_points):
-            for y in range(y_points):
-                for z in range(z_points):
-                    val = tuple([int(self.base(x_max, x_min) * (x+0.5)), int(self.base(y_max, y_min) * (x+0.5)),
-                                 int(self.base(z_max, z_min) * (z+0.5))])
-                    self.centroids[val] = set(val)
+        z_points = [base * i for i in range(self.k)]
+
+        for z in z_points:
+            self.centroids[tuple([(x_max - x_min)/2, (y_max - y_min)/2, z])] = set(tuple([(x_max - x_min)/2, (y_max - y_min)/2, z]))
 
     def furthest_initial_points(self, points):
         # The odds of this being an actual centroid are monumentally low. It is very important it is not
