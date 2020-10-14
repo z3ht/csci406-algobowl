@@ -21,12 +21,24 @@ def solution(solution_name):
     return inner_decorator
 
 
-def begin_kmeans_thread(worker_num, output_dict, k, initial_points, dist_quant, linkage_criteria, verbose, points):
-    output = KMeans(k=k, initial_points=initial_points, dist_quant=dist_quant, linkage_criteria=linkage_criteria).cluster(points, verbose=verbose)
+def begin_kmeans_thread(
+        worker_num, output_dict, k, initial_points, dist_quant, central_value, join_criteria, points, verbose
+):
+    output = KMeans(
+        k=k, initial_points=initial_points, dist_quant=dist_quant,
+        central_value=central_value, join_criteria=join_criteria
+    ).cluster(points, verbose=verbose)
     cur_cluster_dict = gen_cluster_dict(output, points)
     cur_cluster_dict = optimize_points(cur_cluster_dict)
     worst_cluster_distance = get_max_distance_cluster(cur_cluster_dict)[1]
     output_dict[worker_num] = tuple([worst_cluster_distance, output])
+
+
+@solution("s_kmeans")
+def sp_kmeans(k, points, verbose=False):
+    return KMeans(
+        k=k, initial_points="furthest", dist_quant=2, central_value="mean", join_criteria="closest_centroid"
+    ).cluster(points, verbose=verbose)
 
 
 @solution("sp_kmeans")
@@ -34,11 +46,14 @@ def sp_kmeans(k, points, verbose=False):
     return_dict = {}
 
     i = 0
-    for dist_quant in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
-        for linkage_criteria in ["unweighted", "midpoint"]:
+    for dist_quant in [1, 2, 3, 4, 5]:
+        for central_value in ["mean", "midpoint", "static"]:
             for initial_points in ["stacked", "furthest"]:
-                begin_kmeans_thread(i, return_dict, k, initial_points, dist_quant, linkage_criteria, verbose, points)
-                i += 1
+                for join_criteria in ["closest_centroid"]:
+                    begin_kmeans_thread(
+                        i, return_dict, k, initial_points, dist_quant, central_value, join_criteria, points, verbose
+                    )
+                    i += 1
 
     best = (sys.maxsize, None)
     for output in return_dict.values():
@@ -55,16 +70,20 @@ def kmeans(k, points, verbose=False):
     workers = []
 
     i = 0
-    for dist_quant in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
-        for linkage_criteria in ["unweighted", "midpoint"]:
+    for dist_quant in [1, 2, 3, 4, 5]:
+        for central_value in ["mean", "midpoint", "static"]:
             for initial_points in ["stacked", "furthest"]:
-                worker = multiprocessing.Process(
-                    target=begin_kmeans_thread,
-                    args=(i, return_dict, k, initial_points, dist_quant, linkage_criteria, verbose, points)
-                )
-                workers.append(worker)
-                worker.start()
-                i += 1
+                for join_criteria in ["closest_centroid", "closest_furthest"]:
+                    worker = multiprocessing.Process(
+                        target=begin_kmeans_thread,
+                        args=(
+                            i, return_dict, k, initial_points, dist_quant, central_value,
+                            join_criteria, points, verbose
+                        )
+                    )
+                    workers.append(worker)
+                    worker.start()
+                    i += 1
 
     for worker in workers:
         worker.join()
@@ -315,16 +334,11 @@ def main(argv):
         cur_clusters_dict = optimize_points(cur_clusters_dict)
         worst_cluster_distance = get_max_distance_cluster(cur_clusters_dict)[1]
         if worst_cluster_distance < best[0]:
-            best = tuple([worst_cluster_distance, cur_clusters, cur_solution])
-    clusters = best[1]
-    best_solution = best[2]
+            best = tuple([worst_cluster_distance, cur_clusters_dict, cur_solution])
+    cluster_dict = best[1]
+    cur_solution = best[2]
 
-    # convert output into dictionary of clusters (key = cluster_id, value = points in cluster)
-    cluster_dict = dict()
-    for cluster, point in zip(clusters, points):
-        cluster_dict.setdefault(cluster, []).append(point)
-
-    free_clusters, cluster_dict = organize_clusters(cluster_dict, best_solution)
+    free_clusters, cluster_dict = organize_clusters(cluster_dict, cur_solution)
     if free_clusters != 0:
         print(f"WARNING:: Inefficient use of clusters. {free_clusters} free clusters unused")
 

@@ -1,3 +1,6 @@
+import sys
+from math import floor
+
 import numpy as np
 
 
@@ -11,7 +14,7 @@ def get_min_maxs(points):
 
 class KMeans:
 
-    def __init__(self, k, initial_points, dist_quant, linkage_criteria):
+    def __init__(self, k, initial_points, dist_quant, central_value, join_criteria):
         """
         Initialize KMeans estimator
 
@@ -19,20 +22,31 @@ class KMeans:
         ----------
         :param k: Number of clusters
         :param dist_quant: Distance metric (1=manhattan, 2=euclidean, ...)
-        :param linkage_criteria: Available options: 'midpoint', 'complete', 'single', 'unweighted', 'wards'
+        :param central_value: Available options: 'midpoint', 'mean'
         :param initial_points: Initial points creation function. Options: 'furthest', 'stacked'
+        :param join_criteria: Join points based off: 'closest_mean', 'closest_furthest'
         """
         self.k = k
         self.dist_quant = dist_quant
 
         linkage_criteria_dict = {
             "midpoint": self.get_center_point,
-            "unweighted": self.get_mean_point
+            "mean": self.get_mean_point,
+            "static": self.keep_centroid
         }
-        if linkage_criteria.lower() in linkage_criteria_dict:
-            self.linkage_criteria = linkage_criteria_dict[linkage_criteria.lower()]
+        if central_value.lower() in linkage_criteria_dict:
+            self.central_value = linkage_criteria_dict[central_value.lower()]
         else:
-            self.linkage_criteria = linkage_criteria
+            self.central_value = central_value
+
+        join_criteria_dict = {
+            "closest_centroid": self.find_closest_centroid,
+            "closest_furthest": self.find_min_furthest          # VERY BAD; DO NOT USE
+        }
+        if join_criteria.lower() in join_criteria_dict:
+            self.join_criteria = join_criteria_dict[join_criteria.lower()]
+        else:
+            self.join_criteria = join_criteria
 
         initial_points_dict = {
             "furthest": self.furthest_initial_points,
@@ -45,7 +59,7 @@ class KMeans:
 
     centroids = dict()
     k = 1
-    max_iterations = 1000
+    max_iterations = 300
 
     def cluster(self, points, verbose=False):
         self.points = points
@@ -73,13 +87,13 @@ class KMeans:
 
             for p in self.points:
                 # find the nearest centroid(c_1, c_2 .. c_k)
-                c = self.find_closest_centroid(p)
+                c = self.join_criteria(p)
                 # assign the point to that cluster
                 self.centroids[c].add(p)
 
             for c in list(self.centroids.keys()):
                 cluster = self.centroids.get(c)
-                cluster_mean = self.linkage_criteria(cluster)
+                cluster_mean = self.central_value(cluster)
                 if cluster_mean != -1:
                     self.centroids[cluster_mean] = self.centroids.pop(c)
             i += 1
@@ -89,7 +103,6 @@ class KMeans:
                 break
             previous_centroids = list(self.centroids.keys())
 
-        cluster_idx = 0
         result_list = []
 
         for point in points:
@@ -123,10 +136,15 @@ class KMeans:
         return x_count / len(cluster), y_count / len(cluster), z_count / len(cluster)
 
     def get_center_point(self, cluster):
+        if len(cluster) == 0:
+            return -1
         min_point = min(cluster)
         max_point = max(cluster)
         return ((min_point[0] + max_point[0]) / 2), ((min_point[1] + max_point[1]) / 2), (
                     (min_point[2] + max_point[2]) / 2)
+
+    def keep_centroid(self, cluster):
+        return -1
 
     # find the closest centroid to a given point
     def find_closest_centroid(self, point):
@@ -139,6 +157,18 @@ class KMeans:
                 closest_centroid = c
         return closest_centroid
 
+    def find_min_furthest(self, point):
+        min_furthest = (sys.maxsize, None)
+        for c, c_points in self.centroids.items():
+            max_furthest = self.get_distance(c, point)
+            for far_point in c_points:
+                cur_dist = self.get_distance(far_point, point)
+                if cur_dist > max_furthest:
+                    max_furthest = cur_dist
+            if max_furthest < min_furthest[0]:
+                min_furthest = tuple([max_furthest, c])
+        return min_furthest[1]
+
     # given a cluster, find the maximum distance between any two points in the cluster
     def max_intracluster_distance(self, cluster):
         max_distance = 0
@@ -149,15 +179,22 @@ class KMeans:
                     max_distance = distance
         return max_distance
 
+    def base(self, min, max):
+        return (max - min)/self.k + min
+
     def stacked_initial_points(self, points):
         x_min, x_max, y_min, y_max, z_min, z_max = get_min_maxs(points)
 
-        base = (z_max - z_min)/self.k + z_min
+        x_points = floor(self.k ** (1/3))
+        y_points = floor((self.k // x_points) ** (1/2))
+        z_points = floor((self.k // (x_points * y_points)))
 
-        z_points = [base * i for i in range(self.k)]
-
-        for z in z_points:
-            self.centroids[tuple([(x_max - x_min)/2, (y_max - y_min)/2, z])] = set(tuple([(x_max - x_min)/2, (y_max - y_min)/2, z]))
+        for x in range(x_points):
+            for y in range(y_points):
+                for z in range(z_points):
+                    val = tuple([int(self.base(x_max, x_min) * (x+0.5)), int(self.base(y_max, y_min) * (x+0.5)),
+                                 int(self.base(z_max, z_min) * (z+0.5))])
+                    self.centroids[val] = set(val)
 
     def furthest_initial_points(self, points):
         # The odds of this being an actual centroid are monumentally low. It is very important it is not
@@ -185,9 +222,6 @@ class Square():
     def __init__(self, k):
         self.k = k
 
-    def get_min_maxs(self, points):
-        pass
-
     def cluster(self, points):
-        x_min, x_max, y_min, y_max, z_min, z_max = self.get_min_maxs(points)
+        x_min, x_max, y_min, y_max, z_min, z_max = get_min_maxs(points)
         pass
