@@ -1,6 +1,14 @@
 import numpy as np
 
 
+def get_min_maxs(points):
+    x = [p[0] for p in points]
+    y = [p[1] for p in points]
+    z = [p[2] for p in points]
+
+    return min(x), max(x), min(y), max(y), min(z), max(z)
+
+
 class KMeans:
 
     def __init__(self, k, initial_points, dist_quant, linkage_criteria):
@@ -112,7 +120,7 @@ class KMeans:
             x_count += point[0]
             y_count += point[1]
             z_count += point[2]
-        return (x_count / len(cluster), y_count / len(cluster), z_count / len(cluster))
+        return x_count / len(cluster), y_count / len(cluster), z_count / len(cluster)
 
     def get_center_point(self, cluster):
         min_point = min(cluster)
@@ -142,11 +150,14 @@ class KMeans:
         return max_distance
 
     def stacked_initial_points(self, points):
-        diff = 2000 / (self.k + 1)
-        z_points = [(-1000 + diff) + i * diff for i in range(self.k)]
+        x_min, x_max, y_min, y_max, z_min, z_max = get_min_maxs(points)
+
+        base = (z_max - z_min)/self.k + z_min
+
+        z_points = [base * i for i in range(self.k)]
 
         for z in z_points:
-            self.centroids[tuple([0, 0, z])] = set(tuple([0, 0, z]))
+            self.centroids[tuple([(x_max - x_min)/2, (y_max - y_min)/2, z])] = set(tuple([(x_max - x_min)/2, (y_max - y_min)/2, z]))
 
     def furthest_initial_points(self, points):
         # The odds of this being an actual centroid are monumentally low. It is very important it is not
