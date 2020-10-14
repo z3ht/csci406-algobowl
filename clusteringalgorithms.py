@@ -1,5 +1,6 @@
 import collections
 import sys
+import random
 from math import floor, ceil
 
 import numpy as np
@@ -92,7 +93,9 @@ class KMeans:
 
         initial_points_dict = {
             "furthest": self.furthest_initial_points,
-            "stacked": self.stacked_initial_points
+            "stacked": self.stacked_initial_points,
+            "centered": self.centered_initial_points,
+            "random": self.random_initial_points
         }
         if isinstance(initial_points, str) and initial_points.lower() in initial_points_dict:
             self.initial_points = initial_points_dict[initial_points.lower()]
@@ -233,6 +236,20 @@ class KMeans:
 
         for z in z_points:
             self.centroids[tuple([(x_max - x_min)/2, (y_max - y_min)/2, z])] = set(tuple([(x_max - x_min)/2, (y_max - y_min)/2, z]))
+
+    def centered_initial_points(self, points):
+        cs = [tuple([-self.k//2, 0, i]) for i in range(self.k)]
+        for c in cs:
+            self.centroids[c] = set()
+
+    def random_initial_points(self, points):
+        x_min, x_max, y_min, y_max, z_min, z_max = get_min_maxs(points)
+        for _ in range(self.k):
+            x = random.uniform(x_min, x_max)
+            y = random.uniform(y_min, y_max)
+            z = random.uniform(z_min, z_max)
+            c = tuple([x, y, z])
+            self.centroids[c] = set()
 
     def furthest_initial_points(self, points):
         # The odds of this being an actual centroid are monumentally low. It is very important it is not

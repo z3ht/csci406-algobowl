@@ -40,6 +40,26 @@ def sp_kmeans(k, points, verbose=False):
         k=k, initial_points=cubes(points, k)[0], dist_quant=1, central_value="mean", join_criteria="closest_centroid"
     ).cluster(points, verbose=verbose)
 
+@solution("random_kmeans")
+def sp_kmeans(k, points, verbose=False):
+    return_dict = {}
+
+    i = 0
+    while i < 50:
+        for dist_quant in [1]:
+            for central_value in ["mean"]:
+                begin_kmeans_thread(
+                    i, return_dict, k, "random", dist_quant, central_value, "closest_centroid", points, verbose
+                )
+        i += 1
+
+    best = (sys.maxsize, None)
+    for output in return_dict.values():
+        if output[0] < best[0]:
+            best = output
+
+    return best[1]
+
 
 @solution("sp_kmeans")
 def sp_kmeans(k, points, verbose=False):
@@ -330,6 +350,17 @@ def main(argv):
             best = tuple([worst_cluster_distance, cur_clusters_dict, cur_solution])
     cluster_dict = best[1]
     cur_solution = best[2]
+
+    point_count = 0
+    point_test = []
+    for v in cluster_dict.values():
+        for v1 in v:
+            assert v1 in points
+            point_count += 1
+            point_test.append(v1)
+    assert len(point_test) == len(set(point_test))
+    assert point_count == len(points)
+
 
     free_clusters, cluster_dict = organize_clusters(cluster_dict, cur_solution)
     if free_clusters != 0:
