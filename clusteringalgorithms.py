@@ -169,7 +169,7 @@ class KMeans:
         self.centroids.pop(tuple([-1871237723123, -1871237723123, -1871237723123]))
 
 
-class Squares():
+class Square():
 
     def __init__(self, k):
         self.k = k

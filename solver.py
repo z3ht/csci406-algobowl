@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import numpy as np
-from clusteringalgorithms import KMeans
+from clusteringalgorithms import KMeans, Square
 from sklearn.cluster import KMeans as KMeansLib
 import sys
 import getopt
@@ -79,6 +79,11 @@ def kmeans(k, points, verbose=False):
 @solution("kmeanslib")
 def kmeans(k, points):
     return KMeansLib(n_clusters=k, n_init=20).fit_predict(np.asarray(points))
+
+
+@solution("square")
+def square(k, points):
+    return Square(k=k).cluster(points)
 
 
 def gen_cluster_dict(clusters, points):
@@ -253,7 +258,7 @@ def main(argv):
 
     ifile = ""
     ofile = ""
-    style = ""
+    styles = []
     verbose = False
     midpoint = False
 
@@ -270,7 +275,7 @@ def main(argv):
         elif opt in ("-o", "--ofile"):
             ofile = str(arg)
         elif opt in ("-s", "--style"):
-            style = str(arg)
+            styles = str(arg).split(",")
         else:
             continue
         if arg in argv:
@@ -288,7 +293,7 @@ def main(argv):
     args = {
         nameof(ifile): ifile,
         nameof(ofile): ofile,
-        nameof(style): style,
+        nameof(styles): styles,
         nameof(verbose): verbose,
         nameof(midpoint): midpoint,
         nameof(n): n,
@@ -296,22 +301,30 @@ def main(argv):
         nameof(points): points
     }
 
-    cur_solution = available_solutions[style]
-    cur_solution_sig = signature(cur_solution)
-    cur_args = []
-    for param in cur_solution_sig.parameters.keys():
-        if param not in args:
-            continue
-        cur_args.append(args[param])
-    clusters = cur_solution(*cur_args)
+    best = (sys.maxsize, None, None)
+    for style in styles:
+        cur_solution = available_solutions[style]
+        cur_solution_sig = signature(cur_solution)
+        cur_args = []
+        for param in cur_solution_sig.parameters.keys():
+            if param not in args:
+                continue
+            cur_args.append(args[param])
+        cur_clusters = cur_solution(*cur_args)
+        cur_clusters_dict = gen_cluster_dict(cur_clusters, points)
+        cur_clusters_dict = optimize_points(cur_clusters_dict)
+        worst_cluster_distance = get_max_distance_cluster(cur_clusters_dict)[1]
+        if worst_cluster_distance < best[0]:
+            best = tuple([worst_cluster_distance, cur_clusters, cur_solution])
+    clusters = best[1]
+    best_solution = best[2]
 
     # convert output into dictionary of clusters (key = cluster_id, value = points in cluster)
     cluster_dict = dict()
     for cluster, point in zip(clusters, points):
         cluster_dict.setdefault(cluster, []).append(point)
 
-    cluster_dict = optimize_points(cluster_dict)
-    free_clusters, cluster_dict = organize_clusters(cluster_dict, cur_solution)
+    free_clusters, cluster_dict = organize_clusters(cluster_dict, best_solution)
     if free_clusters != 0:
         print(f"WARNING:: Inefficient use of clusters. {free_clusters} free clusters unused")
 
