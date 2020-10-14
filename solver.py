@@ -244,6 +244,9 @@ def move_value_to_better_cluster(f_key, furthest_point, cluster_dict, cur_max, c
         if length < best[0]:
             best = (length, key, removal)
 
+    if best[2] is None:
+        return cur_max, cluster_dict
+
     ending_max = None
     for p in best[2]:
         ending_max, cluster_dict = move_value_to_better_cluster(best[1], p, cluster_dict, cur_max, cur_depth + 1, max_depth)
