@@ -1,3 +1,4 @@
+import collections
 import sys
 from math import floor, ceil
 
@@ -26,9 +27,10 @@ def cubes(points, k):
         for y in range(k + 1):
             for z in range(k + 1):
                 square_size = x**2 + y**2 + z**2
-                if x * y * z == k and square_size < best:
-                    best = square_size
-                    outputs.clear()
+                if x * y * z == k and square_size <= best:
+                    if square_size < best:
+                        outputs.clear()
+                        best = square_size
                     outputs.add(tuple([x, y, z]))
                     outputs.add(tuple([x, z, y]))
                     outputs.add(tuple([y, x, z]))
@@ -48,7 +50,7 @@ def cubes(points, k):
                     value = set()
                     value.add(val)
                     result[val] = value
-        results.append(lambda _: result)
+        results.append(result)
     return results
 
 
@@ -81,7 +83,7 @@ class KMeans:
 
         join_criteria_dict = {
             "closest_centroid": self.find_closest_centroid,
-            "closest_furthest": self.find_min_furthest          # VERY BAD; DO NOT USE
+            "closest_furthest": self.find_min_furthest
         }
         if isinstance(join_criteria, str) and join_criteria.lower() in join_criteria_dict:
             self.join_criteria = join_criteria_dict[join_criteria.lower()]
@@ -105,9 +107,10 @@ class KMeans:
         self.points = points
 
         self.centroids = {}
-        result = self.initial_points(points)
-        if result is not None:
-            self.centroids = result
+        if isinstance(self.initial_points, collections.Callable):
+            self.initial_points(points)
+        else:
+            self.centroids = self.initial_points
 
         if verbose:
             print(f"Here are the initial centroids: {self.centroids.keys()}")

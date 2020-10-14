@@ -37,7 +37,7 @@ def begin_kmeans_thread(
 @solution("s_kmeans")
 def sp_kmeans(k, points, verbose=False):
     return KMeans(
-        k=k, initial_points="cubed", dist_quant=1, central_value="mean", join_criteria="closest_centroid"
+        k=k, initial_points=cubes(points, k)[0], dist_quant=1, central_value="mean", join_criteria="closest_centroid"
     ).cluster(points, verbose=verbose)
 
 
@@ -159,37 +159,30 @@ def organize_clusters(cluster_dict, solution):
 
 
 def optimize_points(cluster_dict):
+    prev_p1, prev_p2 = (9999, 9999, 9999), (9999, 9999, 9999)
     while True:
-        worst_cluster, prev_cluster_distance, p1, p2 = get_max_distance_cluster(cluster_dict)
+        worst_cluster, cluster_distance, p1, p2 = get_max_distance_cluster(cluster_dict)
+        if (p1 == prev_p1 or p1 == prev_p2) and (p2 == prev_p1 or p2 == prev_p2):
+            break
+        prev_p1, prev_p2 = p1, p2
 
         cluster_dict = move_value_to_better_cluster(worst_cluster, p1, cluster_dict)
         cluster_dict = move_value_to_better_cluster(worst_cluster, p2, cluster_dict)
-
-        worst_cluster, new_cluster_distance, p1, p2 = get_max_distance_cluster(cluster_dict)
-        if prev_cluster_distance == new_cluster_distance:
-            break
 
     return cluster_dict
 
 
 def move_value_to_better_cluster(cluster, point, cluster_dict):
     cluster.remove(point)
-    new_score = max_intracluster_distance(cluster)[0]
 
-    swapped = False
-
-    for key in cluster_dict.keys():
-        cluster_b = cluster_dict[key]
+    best = (sys.maxsize, None)
+    for key, cluster_b in cluster_dict.items():
         cluster_b.append(point)
-        # if the improved new score is still higher than cluster_b's score
-        if new_score >= max_intracluster_distance(cluster_b)[0] and cluster_b != cluster:
-            swapped = True
-            break
-        else:
-            cluster_b.remove(point)
-
-    if not swapped:
-        cluster.append(point)
+        distance = max_intracluster_distance(cluster_b)[0]
+        if best[0] > distance:
+            best = (distance, key)
+        cluster_b.remove(point)
+    cluster_dict[best[1]].append(point)
 
     return cluster_dict
 
