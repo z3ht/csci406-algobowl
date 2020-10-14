@@ -71,7 +71,6 @@ class KMeans:
 
             for c in list(self.centroids.keys()):
                 cluster = self.centroids.get(c)
-                print(cluster)
                 cluster_mean = self.linkage_criteria(cluster)
                 if cluster_mean != -1:
                     self.centroids[cluster_mean] = self.centroids.pop(c)
@@ -168,3 +167,16 @@ class KMeans:
                 self.centroids[next_furthest] = set(next_furthest)
 
         self.centroids.pop(tuple([-1871237723123, -1871237723123, -1871237723123]))
+
+
+class Squares():
+
+    def __init__(self, k):
+        self.k = k
+
+    def get_min_maxs(self, points):
+        pass
+
+    def cluster(self, points):
+        x_min, x_max, y_min, y_max, z_min, z_max = self.get_min_maxs(points)
+        pass
