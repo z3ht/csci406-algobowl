@@ -35,7 +35,7 @@ def readFiles(inputFileName, outputFileName):
         #pop the maxlength
         
         maxDistance = int(o_sets[0])
-        if o_sets[0] != str(maxDistance): 
+        if o_sets[0][:-1] != str(maxDistance):
             raise Exception()
             
         o_sets.pop(0)        
@@ -130,19 +130,43 @@ def ourAlgorithm():
     pass
 
 
-def main(): 
-    testInput = "finalTestinput.txt"
-    testOutput = "finalTestoutput.txt"
+def main():
+    path = "../../algobowl/"
+    input_format = "input_group%d.txt"
+    output_format = "./output/output_group%d.txt"
+
+    inputs = [
+        196,
+        197,
+        198,
+        199,
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        241
+    ]
+    for ind, num_group in enumerate(inputs):
+        print(f"Completing: {ind + 1}/{len(inputs)}...")
+        testInput = path + (input_format % num_group)
+        testOutput = path + (output_format % num_group)
     
-    try: 
-        fileSpecs = readFiles(testInput, testOutput)
-        verifier = allTests(fileSpecs[0], fileSpecs[1], fileSpecs[2], fileSpecs[3], fileSpecs[4])
-        print("The time it took to run this program is: ")
-        print(format((time.time() - start_time), '.014f'))
-        print(verifier)
-    except: 
-          print("The following I/O set has an extraneous space in it. That is an invalid I/O.")
-          print(False)
+        try:
+            fileSpecs = readFiles(testInput, testOutput)
+            print(fileSpecs)
+            verifier = allTests(fileSpecs[0], fileSpecs[1], fileSpecs[2], fileSpecs[3], fileSpecs[4])
+            print("The time it took to run this program is: ")
+            print(format((time.time() - start_time), '.014f'))
+            print(verifier)
+        except:
+            print("The following I/O set has an extraneous space in it. That is an invalid I/O.")
+            print(False)
 
 if __name__ == "__main__":   #Calls main
     main()

@@ -36,9 +36,25 @@ def main(argv):
         else:
             continue
 
-    inputs = [196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 241]
+    inputs = [
+        196,
+        197,
+        198,
+        199,
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        241
+    ]
     for ind, num_group in enumerate(inputs):
-        print(f"Completing: {ind}/{len(inputs)}...")
+        print(f"Completing: {ind+1}/{len(inputs)}...")
         input = path + (input_format % num_group)
         output = path + (output_format % num_group)
         command = f'./solver.py --ifile {input} --ofile {output} --style kmeans'
