@@ -45,7 +45,7 @@ def sp_kmeans(k, points, verbose=False):
     return_dict = {}
 
     i = 0
-    while i < 50:
+    while i < 200:
         for dist_quant in [1]:
             for central_value in ["mean"]:
                 begin_kmeans_thread(
@@ -74,6 +74,40 @@ def sp_kmeans(k, points, verbose=False):
                         i, return_dict, k, initial_points, dist_quant, central_value, join_criteria, points, verbose
                     )
                     i += 1
+
+    best = (sys.maxsize, None)
+    for output in return_dict.values():
+        if output[0] < best[0]:
+            best = output
+
+    return best[1]
+
+
+@solution("rkmeans")
+def rkmeans(k, points, verbose=False):
+    manager = multiprocessing.Manager()
+    return_dict = manager.dict()
+    workers = []
+
+    i = 0
+    while i < 5000:
+        if i % 200 == 0:
+            for worker in workers:
+                worker.join()
+        for dist_quant in [1]:
+            for central_value in ["mean"]:
+                worker = multiprocessing.Process(
+                    target=begin_kmeans_thread,
+                    args=(
+                        i, return_dict, k, "random", dist_quant, central_value, "closest_centroid", points, verbose
+                    )
+                )
+                workers.append(worker)
+                worker.start()
+                i += 1
+
+    for worker in workers:
+        worker.join()
 
     best = (sys.maxsize, None)
     for output in return_dict.values():
@@ -183,9 +217,11 @@ def optimize_points(cluster_dict):
         worst_key, max_distance, p1, p2 = get_max_distance_cluster(cluster_dict, return_key=True)
 
         max_distance_1, modified_cd_1 = move_value_to_better_cluster(worst_key, p1, cluster_dict.copy(), max_distance)
-        max_distance_2, modified_cd_2 = move_value_to_better_cluster(worst_key, p2, cluster_dict.copy(), max_distance)
+        max_distance_2, modified_cd_2 = None, None
+        if p2 in cluster_dict[worst_key]:
+            max_distance_2, modified_cd_2 = move_value_to_better_cluster(worst_key, p2, cluster_dict.copy(), max_distance)
 
-        if max_distance_1 > max_distance_2:
+        if max_distance_2 is None or max_distance_1 > max_distance_2:
             if cluster_dict == modified_cd_2:
                 break
             cluster_dict = modified_cd_2
@@ -197,7 +233,7 @@ def optimize_points(cluster_dict):
     return cluster_dict
 
 
-def move_value_to_better_cluster(f_key, furthest_point, cluster_dict, cur_max, cur_depth=0, max_depth=2):
+def move_value_to_better_cluster(f_key, furthest_point, cluster_dict, cur_max, cur_depth=0, max_depth=5):
     best = (sys.maxsize, None)
     reject_clusters_dict = {}
     for key, cluster_b in cluster_dict.items():
@@ -249,7 +285,11 @@ def move_value_to_better_cluster(f_key, furthest_point, cluster_dict, cur_max, c
 
     ending_max = None
     for p in best[2]:
-        ending_max, cluster_dict = move_value_to_better_cluster(best[1], p, cluster_dict, cur_max, cur_depth + 1, max_depth)
+        if p in cluster_dict[best[1]]:
+            ending_max, cluster_dict = move_value_to_better_cluster(best[1], p, cluster_dict, cur_max, cur_depth + 1, max_depth)
+
+    if ending_max is None:
+        return cur_max, cluster_dict
 
     return ending_max, cluster_dict
 
