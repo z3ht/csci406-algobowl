@@ -29,6 +29,9 @@ def begin_kmeans_thread(
         central_value=central_value, join_criteria=join_criteria
     ).cluster(points, verbose=verbose)
     cur_cluster_dict = gen_cluster_dict(output, points)
+    if cur_cluster_dict is None:
+        output_dict[worker_num] = tuple([sys.maxsize, output])
+        return
     cur_cluster_dict = optimize_points(cur_cluster_dict)
     worst_cluster_distance = get_max_distance_cluster(cur_cluster_dict)[1]
     output_dict[worker_num] = tuple([worst_cluster_distance, output])
@@ -90,12 +93,12 @@ def rkmeans(k, points, verbose=False):
     workers = []
 
     i = 0
-    while i < 5000:
-        if i % 200 == 0:
+    while i < 1000:
+        if i % 100 == 0:
             for worker in workers:
                 worker.join()
-        for dist_quant in [1]:
-            for central_value in ["mean"]:
+        for dist_quant in [1, 2, 3, 4, 5]:
+            for central_value in ["mean", "midpoint"]:
                 worker = multiprocessing.Process(
                     target=begin_kmeans_thread,
                     args=(
@@ -233,7 +236,7 @@ def optimize_points(cluster_dict):
     return cluster_dict
 
 
-def move_value_to_better_cluster(f_key, furthest_point, cluster_dict, cur_max, cur_depth=0, max_depth=5):
+def move_value_to_better_cluster(f_key, furthest_point, cluster_dict, cur_max, cur_depth=0, max_depth=10):
     best = (sys.maxsize, None)
     reject_clusters_dict = {}
     for key, cluster_b in cluster_dict.items():
