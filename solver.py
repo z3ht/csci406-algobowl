@@ -93,7 +93,7 @@ def rkmeans(k, points, verbose=False):
     workers = []
 
     i = 0
-    while i < 50:
+    while i < 20:
         for dist_quant in [1, 2]:
             for central_value in ["mean", "midpoint"]:
                 worker = multiprocessing.Process(
@@ -231,7 +231,7 @@ def optimize_points(cluster_dict):
     return cluster_dict
 
 
-def move_value_to_better_cluster(f_key, furthest_point, cluster_dict, cur_max, cur_depth=0, max_depth=20):
+def move_value_to_better_cluster(f_key, furthest_point, cluster_dict, cur_max, cur_depth=0, max_depth=15):
     best = (sys.maxsize, None)
     reject_clusters_dict = {}
     for key, cluster_b in cluster_dict.items():
@@ -259,7 +259,7 @@ def move_value_to_better_cluster(f_key, furthest_point, cluster_dict, cur_max, c
     removed = defaultdict(list)
     for key, cluster_b in reject_clusters_dict.items():
         c_cluster_b = cluster_b.copy()
-        while len(removed[key]) <= 6:
+        while len(removed[key]) <= 5:
             max = (-1, None)
             for point in c_cluster_b:
                 d = get_distance(furthest_point, point)
@@ -278,7 +278,7 @@ def move_value_to_better_cluster(f_key, furthest_point, cluster_dict, cur_max, c
         if length < best[0]:
             best = (length, key, removal)
 
-    if best[2] is None or len(best[2]) > int(0.4*len(cluster_dict[best[1]])):
+    if best[2] is None or len(best[2]) > int(0.25*len(cluster_dict[best[1]])):
         return cur_max, cluster_dict
 
     ending_max = None
