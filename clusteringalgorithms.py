@@ -270,13 +270,3 @@ class KMeans:
                 self.centroids[next_furthest] = set(next_furthest)
 
         self.centroids.pop(tuple([-1871237723123, -1871237723123, -1871237723123]))
-
-
-class Square():
-
-    def __init__(self, k):
-        self.k = k
-
-    def cluster(self, points):
-        x_min, x_max, y_min, y_max, z_min, z_max = get_min_maxs(points)
-        pass
