@@ -67,7 +67,7 @@ class KMeans:
         :param dist_quant: Distance metric (1=manhattan, 2=euclidean, ...)
         :param central_value: Available options: 'midpoint', 'mean'
         :param initial_points: Initial points creation function. Options: 'furthest', 'stacked'
-        :param join_criteria: Join points based off: 'closest_mean', 'closest_furthest'
+        :param join_criteria: Join points based off: 'closest_centroid', 'closest_furthest'
         """
         self.k = k
         self.dist_quant = dist_quant

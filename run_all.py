@@ -57,7 +57,7 @@ def main(argv):
         print(f"Completing: {ind+1}/{len(inputs)}...")
         input = path + (input_format % num_group)
         output = path + (output_format % num_group)
-        command = f'./solver.py --ifile {input} --ofile {output} --style kmeans'
+        command = f'./solver.py --ifile {input} --ofile {output} --style rkmeans'
         os.system(command)
 
 
